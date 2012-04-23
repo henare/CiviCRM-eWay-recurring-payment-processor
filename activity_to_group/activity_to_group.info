@@ -1,0 +1,6 @@
+name = Activity to Group
+description = Community Builders module for automatically adding new contacts to a group
+dependencies[] = civicrm
+package = CiviCRM
+core = 7.x
+version = 1.0
