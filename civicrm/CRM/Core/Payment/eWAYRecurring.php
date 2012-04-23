@@ -230,7 +230,7 @@ class CRM_Core_Payment_eWAYRecurring extends CRM_Core_Payment
             $RebillPayment->CustomerFirstName($params['first_name']);  //   50 Chars - ewayCustomerFirstName
        		$RebillPayment->CustomerLastName($params['last_name']);  //   50 Chars - ewayCustomerLastName
        		// CLIENT SPECIFIC, eWay receipts to go to special mailbox, mainly for recurring payment processing as eWay doesn't post to any URLs
-       		$RebillPayment->CustomerEmail('donations@voiceless.org.au');      
+       		$RebillPayment->CustomerEmail('email address');      
        		$RebillPayment->CustomerAddress($params['street_address']);  //  255 Chars - ewayCustomerAddress
        		$RebillPayment->CustomerSuburb($params['city']);  //  255 Chars - ewayCustomerAddress
        		$RebillPayment->CustomerState($params['state_province']);  //  255 Chars - ewayCustomerAddress
@@ -449,7 +449,7 @@ class CRM_Core_Payment_eWAYRecurring extends CRM_Core_Payment
 	   	$eWAYRequest->PurchaserFirstName($params['first_name']);  //   50 Chars - ewayCustomerFirstName
 	   	$eWAYRequest->PurchaserLastName($params['last_name']);  //   50 Chars - ewayCustomerLastName
 	   	// CLIENT SPECIFIC, again, eWay receipts to go to client mailbox
-	   	$eWAYRequest->PurchaserEmailAddress('donations@voiceless.org.au');  //   50 Chars - ewayCustomerEmail     
+	   	$eWAYRequest->PurchaserEmailAddress('email address');  //   50 Chars - ewayCustomerEmail     
 	   	$eWAYRequest->PurchaserAddress($fullAddress);  //  255 Chars - ewayCustomerAddress
 	   	$eWAYRequest->PurchaserPostalCode($params['postal_code']);  //    6 Chars - ewayCustomerPostcode
 	   	$eWAYRequest->InvoiceDescription($description);  // 1000 Chars - ewayCustomerInvoiceDescription

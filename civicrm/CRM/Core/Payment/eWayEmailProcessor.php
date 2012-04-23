@@ -136,7 +136,7 @@ class EwayEmailProcessor {
         require_once 'CRM/Mailing/MailStore/Imap.php';
         
         // Currently manually entering mailbox settings. In the long run this should be settable in GUI, but that would involve many other changes to CiviCRM first…
-        return new CRM_Mailing_MailStore_Imap('communitybuilders.emailserver.com.au','voiceless-payments@communitybuilders.com.au','liuhd23489yhjkSa!', (bool) 1, NULL);
+        return new CRM_Mailing_MailStore_Imap('email server address','email server user name','email server password', (bool) 1, NULL);
     }
 
     static function _process ($civiMail,$dao) {
@@ -307,10 +307,10 @@ class EwayEmailProcessor {
 						$receiptEmail->msg_text,
 						$body,
 						$emailAddress['email'],
-						27255, // CLIENT SPECIFIC, we have to match activity to a contact, so this is Suzanne
-						'donations@voiceless.org.au',// CLIENT SPECIFIC, manual setting of from email address
+						xxx, // CLIENT SPECIFIC, we have to match activity to a contact, so this is Suzanne
+						'from email address',// CLIENT SPECIFIC, manual setting of from email address
 						null,
-						'donations@voiceless.org.au',// CLIENT SPECIFIC, manual setting of cc addess
+						'cc email address',// CLIENT SPECIFIC, manual setting of cc addess
 						null,
 						$contactIDs
 					);
