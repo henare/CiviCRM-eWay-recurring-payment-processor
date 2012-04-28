@@ -95,7 +95,7 @@ This is a combination of the original eWay payment processor, with customisation
 
 require_once 'CRM/Core/Payment.php';
 
-class CRM_Core_Payment_eWAYRecurring extends CRM_Core_Payment 
+class org_civicrm_ewayrecurring extends CRM_Core_Payment
 { 
    const CHARSET  = 'UTF-8'; # (not used, implicit in the API, might need to convert?)
          
@@ -119,12 +119,12 @@ class CRM_Core_Payment_eWAYRecurring extends CRM_Core_Payment
    function __construct( $mode, &$paymentProcessor ) 
    {
        // require custom eWAY API libraries for recurring payments
-       require_once 'eWAY/eWAY_Recurring_GatewayRequest.php';    
-       require_once 'eWAY/eWAY_Recurring_GatewayResponse.php';  
+       require_once 'packages/eWAY/eWAY_Recurring_GatewayRequest.php';
+       require_once 'packages/eWAY/eWAY_Recurring_GatewayResponse.php';
        
        // As this handles recurring and non-recurring, we also need to include original api libraries
-       require_once 'eWAY/eWAY_GatewayRequest.php';    
-       require_once 'eWAY/eWAY_GatewayResponse.php';    
+       require_once 'packages/eWAY/eWAY_GatewayRequest.php';
+       require_once 'packages/eWAY/eWAY_GatewayResponse.php';
        
        $this->_mode             = $mode;             // live or test
        $this->_paymentProcessor = $paymentProcessor;
@@ -143,7 +143,7 @@ class CRM_Core_Payment_eWAYRecurring extends CRM_Core_Payment
     static function &singleton( $mode, &$paymentProcessor ) {
         $processorName = $paymentProcessor['name'];
         if (self::$_singleton[$processorName] === null ) {
-            self::$_singleton[$processorName] = new CRM_Core_Payment_eWAYRecurring( $mode, $paymentProcessor );
+            self::$_singleton[$processorName] = new org_civicrm_ewayrecurring( $mode, $paymentProcessor );
         }
         return self::$_singleton[$processorName];
     }

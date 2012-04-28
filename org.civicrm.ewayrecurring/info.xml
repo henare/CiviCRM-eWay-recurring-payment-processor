@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension key="org.civicrm.ewayrecurring" type="payment">
-  <callback>eWay</callback>
-  <name>eWay Recurring</name>
+  <file>eWAYRecurring</file>
+  <name>eWay_Recurring</name>
   <description>Recurring payments payment processor for eWay</description>
-  <url>http://civicrm.org</url>
+  <urls>
+    <url desc="Main Extension Page">http://civicrm.org</url>
+    <url desc="Documentation">http://civicrm.org</url>
+    <url desc="Support">http://civicrm.org</url>
+    <url desc="Licensing">http://civicrm.org</url>
+  </urls>
   <license>AGPL</license>
   <maintainer>
     <author>Melbourne CiviCRM</author>
@@ -13,5 +18,22 @@
   <version>0.5</version>
   <develStage>beta</develStage>
   <compatibility><ver>3.3</ver></compatibility>
-  <comments/>
+  <comments></comments>
+  <typeInfo>
+   <userNameLabel>Customer ID</userNameLabel>
+   <passwordLabel></passwordLabel>
+   <signatureLabel></signatureLabel>
+   <subjectLabel></subjectLabel>
+   <urlSiteDefault>https://www.eway.com.au/gateway_cvn/xmlpayment.asp</urlSiteDefault>
+   <urlApiDefault></urlApiDefault>
+   <urlRecurDefault></urlRecurDefault>
+   <urlSiteTestDefault>https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp</urlSiteTestDefault>
+   <urlApiTestDefault></urlApiTestDefault>
+   <urlRecurTestDefault></urlRecurTestDefault>
+   <urlButtonDefault></urlButtonDefault>
+   <urlButtonTestDefault></urlButtonTestDefault>
+   <billingMode>form</billingMode>
+   <isRecur>1</isRecur>
+   <paymentType>1</paymentType>
+  </typeInfo>
 </extension>
