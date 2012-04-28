@@ -26,10 +26,10 @@
    <subjectLabel></subjectLabel>
    <urlSiteDefault>https://www.eway.com.au/gateway_cvn/xmlpayment.asp</urlSiteDefault>
    <urlApiDefault></urlApiDefault>
-   <urlRecurDefault></urlRecurDefault>
+   <urlRecurDefault>https://www.eway.com.au/gateway/rebill/upload.aspx</urlRecurDefault>
    <urlSiteTestDefault>https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp</urlSiteTestDefault>
    <urlApiTestDefault></urlApiTestDefault>
-   <urlRecurTestDefault></urlRecurTestDefault>
+   <urlRecurTestDefault>https://www.eway.com.au/gateway/rebill/test/Upload_test.aspx</urlRecurTestDefault>
    <urlButtonDefault></urlButtonDefault>
    <urlButtonTestDefault></urlButtonTestDefault>
    <billingMode>form</billingMode>
