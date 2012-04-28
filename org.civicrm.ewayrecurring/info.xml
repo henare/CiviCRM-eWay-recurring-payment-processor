@@ -5,7 +5,10 @@
   <description>Recurring payments payment processor for eWay</description>
   <url>http://civicrm.org</url>
   <license>AGPL</license>
-  <maintainer>Melbourne CiviCRM &lt;noreply@civicrm.org&gt;</maintainer>
+  <maintainer>
+    <author>Melbourne CiviCRM</author>
+    <email>noreply@civicrm.org</email>
+  </maintainer>
   <releaseDate>2012-04-23</releaseDate>
   <version>0.5</version>
   <develStage>beta</develStage>
