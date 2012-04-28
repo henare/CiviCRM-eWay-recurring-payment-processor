@@ -1,4 +1,12 @@
-CiviCRM-eWay-recurring-payment-processor
-========================================
+CiviCRM eWay recurring payment processor extension
+==================================================
 
-CiviCRM eWay recurring payment processor
+Installing
+----------
+
+Copy the `org.civicrm.ewayrecurring` directory to your CiviCRM extension directory and install it from the _Manage Extensions_ administration page in CiviCRM.
+
+Additional set up
+-----------------
+
+**TODO**: Document the setup required to process email receipts.
