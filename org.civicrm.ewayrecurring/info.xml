@@ -20,10 +20,10 @@
   <compatibility><ver>3.3</ver></compatibility>
   <comments></comments>
   <typeInfo>
-   <userNameLabel>Customer ID</userNameLabel>
-   <passwordLabel></passwordLabel>
+   <userNameLabel>Username</userNameLabel>
+   <passwordLabel>Password</passwordLabel>
    <signatureLabel></signatureLabel>
-   <subjectLabel></subjectLabel>
+   <subjectLabel>Customer ID</subjectLabel>
    <urlSiteDefault>https://www.eway.com.au/gateway_cvn/xmlpayment.asp</urlSiteDefault>
    <urlApiDefault></urlApiDefault>
    <urlRecurDefault>https://www.eway.com.au/gateway/rebill/upload.aspx</urlRecurDefault>
