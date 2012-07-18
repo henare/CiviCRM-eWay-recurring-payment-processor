@@ -158,7 +158,7 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             CRM_Core_Error::fatal( ts( 'eWAY - Gateway requires curl with SSL support' ) );
         }
 
-        $ewayCustomerID = $this->_paymentProcessor['user_name'];   // eWAY Client ID
+        $ewayCustomerID = $this->_paymentProcessor['subject'];   // eWAY Client ID
 
         /*
         //-------------------------------------------------------------
@@ -201,7 +201,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
 
         // Was the recurring payment check box checked?
         if ($params['is_recur'] == true) {
-            $ewayCustomerID = $this->_paymentProcessor['user_name'];   // eWAY Client ID
             $gateway_URL    = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
 
             $RebillPayment  = new RebillPayment; // Create appropriate rebill object from api includes
@@ -407,7 +406,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         // This is a one off payment, most of this is lifted straight from the original code, so I wont document it.
         else
         {
-            $ewayCustomerID = $this->_paymentProcessor['user_name'];   // eWAY Client ID
             $gateway_URL    = $this->_paymentProcessor['url_site'];    // eWAY Gateway URL
             $eWAYRequest  = new GatewayRequest;
 
