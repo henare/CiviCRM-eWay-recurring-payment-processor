@@ -175,7 +175,13 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         $expireYear    = substr ($params['year'], 2, 2);
         $expireMonth   = sprintf('%02d', (int) $params['month']);
         $description   = $params['description'];         // CiviCRM V2.0 - Picks up description
-        $txtOptions    = "";    $amountInCents = round(((float) $params['amount']) * 100);  $credit_card_name  = $params['first_name'] . " ";   if (strlen($params['middle_name']) > 0 ) $credit_card_name .= $params['middle_name'] . " "; $credit_card_name .= $params['last_name'];
+        $txtOptions    = "";
+        $amountInCents = round(((float) $params['amount']) * 100);
+        $credit_card_name  = $params['first_name'] . " ";
+        if (strlen($params['middle_name']) > 0 ) {
+            $credit_card_name .= $params['middle_name'] . " ";
+        }
+        $credit_card_name .= $params['last_name'];
         $currDate = date('d/m/Y') ; // Get the current date
 
         //----------------------------------------------------------------------------------------------------
