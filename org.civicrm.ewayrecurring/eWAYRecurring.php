@@ -226,16 +226,13 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             $RebillPayment->RebillRecurAmt($amountInCents);  //   12 Chars - ewayTotalAmount  (in cents)    - Required
             $RebillPayment->CustomerFirstName($params['first_name']);  //   50 Chars - ewayCustomerFirstName
             $RebillPayment->CustomerLastName($params['last_name']);  //   50 Chars - ewayCustomerLastName
-            // CLIENT SPECIFIC, eWay receipts to go to special mailbox, mainly for recurring payment processing as eWay doesn't post to any URLs
-            $RebillPayment->CustomerEmail('email address');
+            $RebillPayment->CustomerEmail($params['email']);
             $RebillPayment->CustomerAddress($params['street_address']);  //  255 Chars - ewayCustomerAddress
             $RebillPayment->CustomerSuburb($params['city']);  //  255 Chars - ewayCustomerAddress
             $RebillPayment->CustomerState($params['state_province']);  //  255 Chars - ewayCustomerAddress
-
             $RebillPayment->CustomerPostCode($params['postal_code']);  //    6 Chars - ewayCustomerPostcode
             $RebillPayment->RebillInvDesc($description);  // 1000 Chars - ewayCustomerInvoiceDescription
-            // CLIENT SPECIFIC, we add the (r), but also this refers back to the original contribution for subsequent recurring payments
-            $RebillPayment->RebillInvRef($params['contributionID'].'(r)');  //   50 Chars - ewayCustomerInvoiceRef
+            $RebillPayment->RebillInvRef($params['contributionID']);  //   50 Chars - ewayCustomerInvoiceRef
             $RebillPayment->RebillCCName($credit_card_name);  //   50 Chars - ewayCardHoldersName            - Required
             $RebillPayment->RebillCCNumber($params['credit_card_number']);  //   20 Chars - ewayCardNumber                 - Required
             $RebillPayment->RebillCCExpMonth($expireMonth);  //    2 Chars - ewayCardExpiryMonth            - Required
@@ -420,6 +417,14 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             }
 
             //----------------------------------------------------------------------------------------------------
+            // We use CiviCRM's param's 'invoiceID' as the unique transaction token to feed to eWAY
+            // Trouble is that eWAY only accepts 16 chars for the token, while CiviCRM's invoiceID is an 32.
+            // As its made from a "$invoiceID = md5(uniqid(rand(), true));" then using the fierst 16 chars
+            // should be alright
+            //----------------------------------------------------------------------------------------------------
+            $uniqueTrnxNum = substr($params['invoiceID'], 0, 16);
+
+            //----------------------------------------------------------------------------------------------------
             // OPTIONAL: If TEST Card Number force an Override of URL and CutomerID.
             // During testing CiviCRM once used the LIVE URL.
             // This code can be uncommented to override the LIVE URL that if CiviCRM does that again.
@@ -433,20 +438,15 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             //----------------------------------------------------------------------------------------------------
             // Now set the payment details - see http://www.eway.com.au/Support/Developer/PaymentsRealTime.aspx
             //----------------------------------------------------------------------------------------------------
-
-            // CLIENT SPECIFIC, they wanted shorter Invoice number, so amended here.
-            $updatedInvoiceID = substr($params['invoiceID'],6,6);
-
             $eWAYRequest->EwayCustomerID($ewayCustomerID);  //    8 Chars - ewayCustomerID                 - Required
             $eWAYRequest->InvoiceAmount($amountInCents);  //   12 Chars - ewayTotalAmount  (in cents)    - Required
             $eWAYRequest->PurchaserFirstName($params['first_name']);  //   50 Chars - ewayCustomerFirstName
             $eWAYRequest->PurchaserLastName($params['last_name']);  //   50 Chars - ewayCustomerLastName
-            // CLIENT SPECIFIC, again, eWay receipts to go to client mailbox
-            $eWAYRequest->PurchaserEmailAddress('email address');  //   50 Chars - ewayCustomerEmail
+            $eWAYRequest->PurchaserEmailAddress($params['email']);  //   50 Chars - ewayCustomerEmail
             $eWAYRequest->PurchaserAddress($fullAddress);  //  255 Chars - ewayCustomerAddress
             $eWAYRequest->PurchaserPostalCode($params['postal_code']);  //    6 Chars - ewayCustomerPostcode
             $eWAYRequest->InvoiceDescription($description);  // 1000 Chars - ewayCustomerInvoiceDescription
-            $eWAYRequest->InvoiceReference($updatedInvoiceID);  //   50 Chars - ewayCustomerInvoiceRef
+            $eWAYRequest->InvoiceReference($params['invoiceID']);  //   50 Chars - ewayCustomerInvoiceRef
             $eWAYRequest->CardHolderName($credit_card_name);  //   50 Chars - ewayCardHoldersName            - Required
             $eWAYRequest->CardNumber($params['credit_card_number']);  //   20 Chars - ewayCardNumber                 - Required
             $eWAYRequest->CardExpiryMonth($expireMonth);  //    2 Chars - ewayCardExpiryMonth            - Required
@@ -604,7 +604,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             $params['trxn_result_code'] = $eWAYResponse->Status() . $beaglestatus;
             $params['gross_amount']     = $eWAYResponse->Amount();
             $params['trxn_id']          = $eWAYResponse->TransactionNumber();
-            $params['invoiceID'] = $updatedInvoiceID ;
         }
         return $params;
     } // end function doDirectPayment
