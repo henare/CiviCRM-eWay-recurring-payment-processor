@@ -26,65 +26,35 @@
 class TokenGatewayRequest
 {
     public $ewayCustomerID;
-
     public $CustomerRef;
-
     public $CustomerTitle;
-
     public $CustomerFirstName;
-
     public $CustomerLastName;
-
     public $CustomerCompany;
-
     public $CustomerJobDesc;
-
     public $CustomerEmail;
-
     public $CustomerAddress;
-
     public $CustomerSuburb;
-
     public $CustomerState;
-
     public $CustomerPostCode;
-
     public $CustomerCountry;
-
     public $CustomerPhone1;
-
     public $CustomerPhone2;
-
     public $CustomerFax;
-
     public $CustomerURL;
-
     public $CustomerComments;
-
     public $RebillInvRef;
-
     public $RebillInvDesc;
-
     public $RebillCCName;
-
     public $RebillCCNumber;
-
     public $RebillCCExpMonth;
-
     public $RebillCCExpYear;
-
     public $RebillInitAmt;
-
     public $RebillInitDate;
-
     public $RebillRecurAmt;
-
     public $RebillStartDate;
-
     public $RebillInterval;
-
     public $RebillIntervalType;
-
     public $RebillEndDate;
 
     function TokenGatewayRequest()
