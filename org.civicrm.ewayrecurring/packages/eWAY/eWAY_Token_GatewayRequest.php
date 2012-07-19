@@ -25,69 +25,69 @@
 
 class TokenGatewayRequest
 {
-    private $m_ewayCustomerID;
+    private $ewayCustomerID;
 
-    private $m_CustomerRef;
+    private $CustomerRef;
 
-    private $m_CustomerTitle;
+    private $CustomerTitle;
 
-    private $m_CustomerFirstName;
+    private $CustomerFirstName;
 
-    private $m_CustomerLastName;
+    private $CustomerLastName;
 
-    private $m_CustomerCompany;
+    private $CustomerCompany;
 
-    private $m_CustomerJobDesc;
+    private $CustomerJobDesc;
 
-    private $m_CustomerEmail;
+    private $CustomerEmail;
 
-    private $m_CustomerAddress;
+    private $CustomerAddress;
 
-    private $m_CustomerSuburb;
+    private $CustomerSuburb;
 
-    private $m_CustomerState;
+    private $CustomerState;
 
-    private $m_CustomerPostCode;
+    private $CustomerPostCode;
 
-    private $m_CustomerCountry;
+    private $CustomerCountry;
 
-    private $m_CustomerPhone1;
+    private $CustomerPhone1;
 
-    private $m_CustomerPhone2;
+    private $CustomerPhone2;
 
-    private $m_CustomerFax;
+    private $CustomerFax;
 
-    private $m_CustomerURL;
+    private $CustomerURL;
 
-    private $m_CustomerComments;
+    private $CustomerComments;
 
-    private $m_RebillInvRef;
+    private $RebillInvRef;
 
-    private $m_RebillInvDesc;
+    private $RebillInvDesc;
 
-    private $m_RebillCCName;
+    private $RebillCCName;
 
-    private $m_RebillCCNumber;
+    private $RebillCCNumber;
 
-    private $m_RebillCCExpMonth;
+    private $RebillCCExpMonth;
 
-    private $m_RebillCCExpYear;
+    private $RebillCCExpYear;
 
-    private $m_RebillInitAmt;
+    private $RebillInitAmt;
 
-    private $m_RebillInitDate;
+    private $RebillInitDate;
 
-    private $m_RebillRecurAmt;
+    private $RebillRecurAmt;
 
-    private $m_RebillStartDate;
+    private $RebillStartDate;
 
-    private $m_RebillInterval;
+    private $RebillInterval;
 
-    private $m_RebillIntervalType;
+    private $RebillIntervalType;
 
-    private $m_RebillEndDate;
+    private $RebillEndDate;
 
-    private $m_ewayURL;
+    private $ewayURL;
 
     function TokenGatewayRequest()
     {
@@ -97,162 +97,162 @@ class TokenGatewayRequest
 
     public function eWAYCustomerID($value)
     {
-        $this->m_ewayCustomerID = $value;
+        $this->ewayCustomerID = $value;
     }
 
     public function CustomerRef($value)
     {
-        $this->m_CustomerRef = $value;
+        $this->CustomerRef = $value;
     }
 
     public function CustomerTitle($value)
     {
-        $this->m_CustomerTitle = $value;
+        $this->CustomerTitle = $value;
     }
 
     public function CustomerFirstName($value)
     {
-        $this->m_CustomerFirstName = $value;
+        $this->CustomerFirstName = $value;
     }
 
     public function CustomerLastName($value)
     {
-        $this->m_CustomerLastName = $value;
+        $this->CustomerLastName = $value;
     }
 
     public function CustomerCompany($value)
     {
-        $this->m_CustomerCompany = $value;
+        $this->CustomerCompany = $value;
     }
 
     public function CustomerJobDesc($value)
     {
-        $this->m_CustomerJobDesc = $value;
+        $this->CustomerJobDesc = $value;
     }
 
     public function CustomerEmail($value)
     {
-        $this->m_CustomerEmail = $value;
+        $this->CustomerEmail = $value;
     }
 
     public function CustomerAddress($value)
     {
-        $this->m_CustomerAddress = $value;
+        $this->CustomerAddress = $value;
     }
 
     public function CustomerSuburb($value)
     {
-        $this->m_CustomerSuburb = $value;
+        $this->CustomerSuburb = $value;
     }
 
     public function CustomerState($value)
     {
-        $this->m_CustomerState = $value;
+        $this->CustomerState = $value;
     }
 
     public function CustomerPostCode($value)
     {
-        $this->m_CustomerPostCode = $value;
+        $this->CustomerPostCode = $value;
     }
 
     public function CustomerCountry($value)
     {
-        $this->m_CustomerCountry = $value;
+        $this->CustomerCountry = $value;
     }
 
     public function CustomerPhone1($value)
     {
-        $this->m_CustomerPhone1 = $value;
+        $this->CustomerPhone1 = $value;
     }
 
     public function CustomerPhone2($value)
     {
-        $this->m_CustomerPhone2 = $value;
+        $this->CustomerPhone2 = $value;
     }
 
     public function CustomerFax($value)
     {
-        $this->m_CustomerFax = $value;
+        $this->CustomerFax = $value;
     }
 
     public function CustomerURL($value)
     {
-        $this->m_CustomerURL = $value;
+        $this->CustomerURL = $value;
     }
 
     public function CustomerComments($value)
     {
-        $this->m_CustomerComments = $value;
+        $this->CustomerComments = $value;
     }
 
     public function RebillInvRef($value)
     {
-        $this->m_RebillInvRef = $value;
+        $this->RebillInvRef = $value;
     }
 
     public function RebillInvDesc($value)
     {
-        $this->m_RebillInvDesc = $value;
+        $this->RebillInvDesc = $value;
     }
 
     public function RebillCCName($value)
     {
-        $this->m_RebillCCName = $value;
+        $this->RebillCCName = $value;
     }
 
     public function RebillCCNumber($value)
     {
-        $this->m_RebillCCNumber = $value;
+        $this->RebillCCNumber = $value;
     }
 
     public function RebillCCExpMonth($value)
     {
-        $this->m_RebillCCExpMonth = $value;
+        $this->RebillCCExpMonth = $value;
     }
 
     public function RebillCCExpYear($value)
     {
-        $this->m_RebillCCExpYear = $value;
+        $this->RebillCCExpYear = $value;
     }
 
     public function RebillInitAmt($value)
     {
-        $this->m_RebillInitAmt = $value;
+        $this->RebillInitAmt = $value;
     }
 
     public function RebillInitDate($value)
     {
-        $this->m_RebillInitDate = $value;
+        $this->RebillInitDate = $value;
     }
 
     public function RebillRecurAmt($value)
     {
-        $this->m_RebillRecurAmt = $value;
+        $this->RebillRecurAmt = $value;
     }
 
     public function RebillStartDate($value)
     {
-        $this->m_RebillStartDate = $value;
+        $this->RebillStartDate = $value;
     }
 
     public function RebillInterval($value)
     {
-        $this->m_RebillInterval = $value;
+        $this->RebillInterval = $value;
     }
 
     public function RebillIntervalType($value)
     {
-        $this->m_RebillIntervalType = $value;
+        $this->RebillIntervalType = $value;
     }
 
     public function RebillEndDate($value)
     {
-        $this->m_RebillEndDate = $value;
+        $this->RebillEndDate = $value;
     }
 
     public function ewayURL($value)
     {
-        $this->m_ewayURL = $value;
+        $this->ewayURL = $value;
     }
 
     public function ToXML()
@@ -268,7 +268,7 @@ class TokenGatewayRequest
         $nodeCustomer = $xmlRebill->createElement('eWayCustomerID');
         $nodeCustomer = $nodeNewRebill->appendChild($nodeCustomer);
 
-        $value = $xmlRebill->createTextNode($this->m_ewayCustomerID);
+        $value = $xmlRebill->createTextNode($this->ewayCustomerID);
         $value = $nodeCustomer->appendChild($value);
 
         //Customer
@@ -278,103 +278,103 @@ class TokenGatewayRequest
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerRef');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerRef);
+        $value = $xmlRebill->createTextNode($this->CustomerRef);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerTitle');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerTitle);
+        $value = $xmlRebill->createTextNode($this->CustomerTitle);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerFirstName');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerFirstName);
+        $value = $xmlRebill->createTextNode($this->CustomerFirstName);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerLastName');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerLastName);
+        $value = $xmlRebill->createTextNode($this->CustomerLastName);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerCompany');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerCompany);
+        $value = $xmlRebill->createTextNode($this->CustomerCompany);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerJobDesc');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerJobDesc);
+        $value = $xmlRebill->createTextNode($this->CustomerJobDesc);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerEmail');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerEmail);
+        $value = $xmlRebill->createTextNode($this->CustomerEmail);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerAddress');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerAddress);
+        $value = $xmlRebill->createTextNode($this->CustomerAddress);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerSuburb');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerSuburb);
+        $value = $xmlRebill->createTextNode($this->CustomerSuburb);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerState');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerState);
+        $value = $xmlRebill->createTextNode($this->CustomerState);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerPostCode');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerPostCode);
+        $value = $xmlRebill->createTextNode($this->CustomerPostCode);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerCountry');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerCountry);
+        $value = $xmlRebill->createTextNode($this->CustomerCountry);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerPhone1');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerPhone1);
+        $value = $xmlRebill->createTextNode($this->CustomerPhone1);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerPhone2');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerPhone2);
+        $value = $xmlRebill->createTextNode($this->CustomerPhone2);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerFax');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerFax);
+        $value = $xmlRebill->createTextNode($this->CustomerFax);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerURL');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerURL);
+        $value = $xmlRebill->createTextNode($this->CustomerURL);
         $value = $nodeCustomerDetails->appendChild($value);
 
         $nodeCustomerDetails = $xmlRebill->createElement('CustomerComments');
         $nodeCustomerDetails = $nodeCustomer->appendChild($nodeCustomerDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_CustomerComments);
+        $value = $xmlRebill->createTextNode($this->CustomerComments);
         $value = $nodeCustomerDetails->appendChild($value);
 
         //Rebill Events
@@ -384,79 +384,79 @@ class TokenGatewayRequest
         $nodeRebillDetails = $xmlRebill->createElement('RebillInvRef');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillInvRef);
+        $value = $xmlRebill->createTextNode($this->RebillInvRef);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillInvDesc');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillInvDesc);
+        $value = $xmlRebill->createTextNode($this->RebillInvDesc);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillCCName');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillCCName);
+        $value = $xmlRebill->createTextNode($this->RebillCCName);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillCCNumber');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillCCNumber);
+        $value = $xmlRebill->createTextNode($this->RebillCCNumber);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillCCExpMonth');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillCCExpMonth);
+        $value = $xmlRebill->createTextNode($this->RebillCCExpMonth);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillCCExpYear');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillCCExpYear);
+        $value = $xmlRebill->createTextNode($this->RebillCCExpYear);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillInitAmt');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillInitAmt);
+        $value = $xmlRebill->createTextNode($this->RebillInitAmt);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillInitDate');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillInitDate);
+        $value = $xmlRebill->createTextNode($this->RebillInitDate);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillRecurAmt');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillRecurAmt);
+        $value = $xmlRebill->createTextNode($this->RebillRecurAmt);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillStartDate');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillStartDate);
+        $value = $xmlRebill->createTextNode($this->RebillStartDate);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillInterval');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillInterval);
+        $value = $xmlRebill->createTextNode($this->RebillInterval);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillIntervalType');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillIntervalType);
+        $value = $xmlRebill->createTextNode($this->RebillIntervalType);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $nodeRebillDetails = $xmlRebill->createElement('RebillEndDate');
         $nodeRebillDetails = $nodeRebillEvent->appendChild($nodeRebillDetails);
 
-        $value = $xmlRebill->createTextNode($this->m_RebillEndDate);
+        $value = $xmlRebill->createTextNode($this->RebillEndDate);
         $value = $nodeRebillDetails->AppendChild($value);
 
         $InnerXml = $xmlRebill->saveXML();
