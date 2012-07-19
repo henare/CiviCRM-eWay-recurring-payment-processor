@@ -28,6 +28,13 @@ class TokenGatewayResponse
     // Create Customer values
     public $UpdateCustomerResult;
 
+    // Process Payment values
+    public $ewayTrxnError;
+    public $ewayTrxnStatus;
+    public $ewayTrxnNumber;
+    public $ewayReturnAmount;
+    public $ewayAuthCode;
+
     var $txAmount              = 0;
     var $txTransactionNumber   = "";
     var $txInvoiceReference    = "";
@@ -42,6 +49,15 @@ class TokenGatewayResponse
     function processCreateCustomerResponse($xml)
     {
         $this->UpdateCustomerResult = $this->GetNodeValue('UpdateCustomerResult', $xml);
+    }
+
+    function processProcessPaymentResponse($xml)
+    {
+        $this->ewayTrxnError = $this->GetNodeValue('ewayTrxnError', $xml);
+        $this->ewayTrxnStatus = $this->GetNodeValue('ewayTrxnStatus', $xml);
+        $this->ewayTrxnNumber = $this->GetNodeValue('ewayTrxnNumber', $xml);
+        $this->ewayReturnAmount = $this->GetNodeValue('ewayReturnAmount', $xml);
+        $this->ewayAuthCode = $this->GetNodeValue('ewayAuthCode', $xml);
     }
 
     function ProcessResponse($Xml)
