@@ -25,234 +25,73 @@
 
 class TokenGatewayRequest
 {
-    private $ewayCustomerID;
+    public $ewayCustomerID;
 
-    private $CustomerRef;
+    public $CustomerRef;
 
-    private $CustomerTitle;
+    public $CustomerTitle;
 
-    private $CustomerFirstName;
+    public $CustomerFirstName;
 
-    private $CustomerLastName;
+    public $CustomerLastName;
 
-    private $CustomerCompany;
+    public $CustomerCompany;
 
-    private $CustomerJobDesc;
+    public $CustomerJobDesc;
 
-    private $CustomerEmail;
+    public $CustomerEmail;
 
-    private $CustomerAddress;
+    public $CustomerAddress;
 
-    private $CustomerSuburb;
+    public $CustomerSuburb;
 
-    private $CustomerState;
+    public $CustomerState;
 
-    private $CustomerPostCode;
+    public $CustomerPostCode;
 
-    private $CustomerCountry;
+    public $CustomerCountry;
 
-    private $CustomerPhone1;
+    public $CustomerPhone1;
 
-    private $CustomerPhone2;
+    public $CustomerPhone2;
 
-    private $CustomerFax;
+    public $CustomerFax;
 
-    private $CustomerURL;
+    public $CustomerURL;
 
-    private $CustomerComments;
+    public $CustomerComments;
 
-    private $RebillInvRef;
+    public $RebillInvRef;
 
-    private $RebillInvDesc;
+    public $RebillInvDesc;
 
-    private $RebillCCName;
+    public $RebillCCName;
 
-    private $RebillCCNumber;
+    public $RebillCCNumber;
 
-    private $RebillCCExpMonth;
+    public $RebillCCExpMonth;
 
-    private $RebillCCExpYear;
+    public $RebillCCExpYear;
 
-    private $RebillInitAmt;
+    public $RebillInitAmt;
 
-    private $RebillInitDate;
+    public $RebillInitDate;
 
-    private $RebillRecurAmt;
+    public $RebillRecurAmt;
 
-    private $RebillStartDate;
+    public $RebillStartDate;
 
-    private $RebillInterval;
+    public $RebillInterval;
 
-    private $RebillIntervalType;
+    public $RebillIntervalType;
 
-    private $RebillEndDate;
+    public $RebillEndDate;
 
-    private $ewayURL;
+    public $ewayURL;
 
     function TokenGatewayRequest()
     {
         // Empty Constructor
-    }
-
-
-    public function eWAYCustomerID($value)
-    {
-        $this->ewayCustomerID = $value;
-    }
-
-    public function CustomerRef($value)
-    {
-        $this->CustomerRef = $value;
-    }
-
-    public function CustomerTitle($value)
-    {
-        $this->CustomerTitle = $value;
-    }
-
-    public function CustomerFirstName($value)
-    {
-        $this->CustomerFirstName = $value;
-    }
-
-    public function CustomerLastName($value)
-    {
-        $this->CustomerLastName = $value;
-    }
-
-    public function CustomerCompany($value)
-    {
-        $this->CustomerCompany = $value;
-    }
-
-    public function CustomerJobDesc($value)
-    {
-        $this->CustomerJobDesc = $value;
-    }
-
-    public function CustomerEmail($value)
-    {
-        $this->CustomerEmail = $value;
-    }
-
-    public function CustomerAddress($value)
-    {
-        $this->CustomerAddress = $value;
-    }
-
-    public function CustomerSuburb($value)
-    {
-        $this->CustomerSuburb = $value;
-    }
-
-    public function CustomerState($value)
-    {
-        $this->CustomerState = $value;
-    }
-
-    public function CustomerPostCode($value)
-    {
-        $this->CustomerPostCode = $value;
-    }
-
-    public function CustomerCountry($value)
-    {
-        $this->CustomerCountry = $value;
-    }
-
-    public function CustomerPhone1($value)
-    {
-        $this->CustomerPhone1 = $value;
-    }
-
-    public function CustomerPhone2($value)
-    {
-        $this->CustomerPhone2 = $value;
-    }
-
-    public function CustomerFax($value)
-    {
-        $this->CustomerFax = $value;
-    }
-
-    public function CustomerURL($value)
-    {
-        $this->CustomerURL = $value;
-    }
-
-    public function CustomerComments($value)
-    {
-        $this->CustomerComments = $value;
-    }
-
-    public function RebillInvRef($value)
-    {
-        $this->RebillInvRef = $value;
-    }
-
-    public function RebillInvDesc($value)
-    {
-        $this->RebillInvDesc = $value;
-    }
-
-    public function RebillCCName($value)
-    {
-        $this->RebillCCName = $value;
-    }
-
-    public function RebillCCNumber($value)
-    {
-        $this->RebillCCNumber = $value;
-    }
-
-    public function RebillCCExpMonth($value)
-    {
-        $this->RebillCCExpMonth = $value;
-    }
-
-    public function RebillCCExpYear($value)
-    {
-        $this->RebillCCExpYear = $value;
-    }
-
-    public function RebillInitAmt($value)
-    {
-        $this->RebillInitAmt = $value;
-    }
-
-    public function RebillInitDate($value)
-    {
-        $this->RebillInitDate = $value;
-    }
-
-    public function RebillRecurAmt($value)
-    {
-        $this->RebillRecurAmt = $value;
-    }
-
-    public function RebillStartDate($value)
-    {
-        $this->RebillStartDate = $value;
-    }
-
-    public function RebillInterval($value)
-    {
-        $this->RebillInterval = $value;
-    }
-
-    public function RebillIntervalType($value)
-    {
-        $this->RebillIntervalType = $value;
-    }
-
-    public function RebillEndDate($value)
-    {
-        $this->RebillEndDate = $value;
-    }
-
-    public function ewayURL($value)
-    {
-        $this->ewayURL = $value;
     }
 
     public function ToXML()
