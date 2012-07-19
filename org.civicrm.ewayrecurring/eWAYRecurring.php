@@ -96,8 +96,8 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
     function __construct( $mode, &$paymentProcessor )
     {
         // require custom eWAY API libraries for recurring payments
-        require_once 'packages/eWAY/eWAY_Recurring_GatewayRequest.php';
-        require_once 'packages/eWAY/eWAY_Recurring_GatewayResponse.php';
+        require_once 'packages/eWAY/eWAY_Token_GatewayRequest.php';
+        require_once 'packages/eWAY/eWAY_Token_GatewayResponse.php';
 
         // As this handles recurring and non-recurring, we also need to include original api libraries
         require_once 'packages/eWAY/eWAY_GatewayRequest.php';
@@ -181,13 +181,13 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         if ($params['is_recur'] == true) {
             $gateway_URL    = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
 
-            $RebillPayment  = new RebillPayment; // Create appropriate rebill object from api includes
-            if ( ($RebillPayment == null) || ( ! ($RebillPayment instanceof RebillPayment)) ) {
+            $TokenGatewayRequest = new TokenGatewayRequest; // Create appropriate object from api includes
+            if ( ($TokenGatewayRequest == null) || ( ! ($TokenGatewayRequest instanceof TokenGatewayRequest)) ) {
                 return self::errorExit( 9001, "Error: Unable to create eWAY Request object.");
             }
 
-            $RebillResponse = new RecurGatewayResponse; // Likewise, create a rebill response object
-            if ( ($RebillResponse == null) || ( ! ($RebillResponse instanceof RecurGatewayResponse) ) ) {
+            $TokenGatewayResponse = new TokenGatewayResponse; // Likewise, create a response object
+            if ( ($TokenGatewayResponse == null) || ( ! ($TokenGatewayResponse instanceof TokenGatewayResponse) ) ) {
                 return self::errorExit( 9002, "Error: Unable to create eWAY Response object.");
             }
 
