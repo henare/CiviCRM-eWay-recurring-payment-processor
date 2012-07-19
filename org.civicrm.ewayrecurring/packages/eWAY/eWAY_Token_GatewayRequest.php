@@ -464,5 +464,3 @@ class TokenGatewayRequest
         return $InnerXml;
     }
 }
-
-?>

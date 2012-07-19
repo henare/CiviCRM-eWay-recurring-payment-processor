@@ -161,5 +161,3 @@ class TokenGatewayResponse
         return $this->txBeagleScore;
     }
 }
-
-?>
