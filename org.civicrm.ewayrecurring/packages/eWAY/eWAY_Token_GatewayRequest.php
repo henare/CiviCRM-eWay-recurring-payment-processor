@@ -60,16 +60,18 @@ class TokenGatewayRequest
     public $invoiceDescription;
 
     public function createCustomerXML() {
-        $xml = "
+        $this->eWayPassword = htmlentities($this->eWayPassword);
+        $xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+            <soap:Envelope soap:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
             <soap:Header>
-                <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
+                <eWAYHeader xmlns=\"https://www.eway.com.au/gateway/managedPayment\">
                     <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
                     <Username>$this->eWayUsername</Username>
                     <Password>$this->eWayPassword</Password>
                 </eWAYHeader>
             </soap:Header>
             <soap:Body>
-                <CreateCustomer xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
+                <CreateCustomer xmlns=\"https://www.eway.com.au/gateway/managedPayment\">
                     <Title>$this->Title</Title>
                     <FirstName>$this->FirstName</FirstName>
                     <LastName>$this->LastName</LastName>

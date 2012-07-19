@@ -230,38 +230,43 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             $TokenGatewayRequest->CCExpiryMonth = $expireMonth;
             $TokenGatewayRequest->CCExpiryYear = $expireYear;
 
-            // Process Payment values
-            $TokenGatewayRequest->managedCustomerID = ;
-            $TokenGatewayRequest->amount = ;
-            $TokenGatewayRequest->invoiceReference = ;
-            $TokenGatewayRequest->invoiceDescription = ;
+            // ADD EWAY CUSTOMER HERE
+            //-------------------------------------------------
+            // Convert to XML and send the customer information
+            //-------------------------------------------------
+            $create_customer_xml = $TokenGatewayRequest->createCustomerXML();
 
-            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $RebillPayment );
-            //----------------------------------------------------------------------------------------------------
-            // Convert to XML and send the payment information
-            //----------------------------------------------------------------------------------------------------
-            $requestxml = $RebillPayment->ToXML();
-            $submit = curl_init( $gateway_URL );
-
-            if ( ! $submit ) {
+            //Set up cURL
+            $submit = curl_init($gateway_URL);
+            if (!$submit) {
                 return self::errorExit(9004, 'Could not initiate connection to payment gateway');
             }
 
-            curl_setopt($submit, CURLOPT_URL,$gateway_URL);
+            curl_setopt($submit, CURLOPT_URL, $gateway_URL);
             curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($submit, CURLOPT_TIMEOUT, 36000);
-            curl_setopt($submit, CURLOPT_POST,1);
-            curl_setopt($submit, CURLOPT_POSTFIELDS,$requestxml);
+            curl_setopt($submit, CURLOPT_POST, 1);
             // if open_basedir or safe_mode are enabled in PHP settings CURLOPT_FOLLOWLOCATION won't work so don't apply it
             // it's not really required CRM-5841
             if (ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) {
-                curl_setopt($submit, CURLOPT_FOLLOWLOCATION, 1           );  // ensures any Location headers are followed
+                curl_setopt($submit, CURLOPT_FOLLOWLOCATION, 1);  // ensures any Location headers are followed
             }
+
+            // Set the converted customer details to be posted
+            curl_setopt($submit, CURLOPT_POSTFIELDS, $create_customer_xml);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array("SOAPAction: 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer'"));
 
             // Send the data out over the wire
             //--------------------------------
-
             $responseData = curl_exec($submit);
+
+            return self::errorExit( 69, $responseData);
+
+            ob_start();
+            var_dump($responseData);
+            $foo = ob_get_contents();
+            ob_end_clean();
+            return self::errorExit( 69, $foo);
 
             //----------------------------------------------------------------------------------------------------
             // See if we had a curl error - if so tell 'em and bail out
@@ -307,8 +312,16 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             //----------------------------------------------------------------------------------------------------
             // Payment succesfully sent to gateway - process the response now
             //----------------------------------------------------------------------------------------------------
-
             $RebillResponse->ProcessResponse($responseData);
+
+            // TODO: Now process the payment
+            // Process Payment values
+            // $TokenGatewayRequest->managedCustomerID = ;
+            // $TokenGatewayRequest->amount = ;
+            // $TokenGatewayRequest->invoiceReference = ;
+            // $TokenGatewayRequest->invoiceDescription = ;
+
+            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $RebillPayment );
 
             //----------------------------------------------------------------------------------------------------
             // See if we got an OK result - if not tell 'em and bail out
