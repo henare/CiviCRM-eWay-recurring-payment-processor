@@ -199,6 +199,13 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             //----------------------------------------------------------------------------------------------------
             $uniqueTrnxNum = substr($params['invoiceID'], 0, 16);
 
+            //----------------------------------------------------------------------------------------------------
+            // Check to see if we have a duplicate
+            //----------------------------------------------------------------------------------------------------
+            if ( $this->_checkDupe( $params['invoiceID'] ) ) {
+                return self::errorExit(9003, 'It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from eWAY.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.' );
+            }
+
             /***********************
              * Create request object
              */
@@ -237,14 +244,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             $TokenGatewayRequest->invoiceDescription = ;
 
             CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $RebillPayment );
-
-            //----------------------------------------------------------------------------------------------------
-            // Check to see if we have a duplicate before we send
-            //----------------------------------------------------------------------------------------------------
-            if ( $this->_checkDupe( $params['invoiceID'] ) ) {
-                return self::errorExit(9003, 'It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from eWAY.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.' );
-            }
-
             //----------------------------------------------------------------------------------------------------
             // Convert to XML and send the payment information
             //----------------------------------------------------------------------------------------------------
