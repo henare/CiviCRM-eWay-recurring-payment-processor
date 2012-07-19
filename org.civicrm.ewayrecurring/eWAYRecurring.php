@@ -179,7 +179,7 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
 
         // Was the recurring payment check box checked?
         if ($params['is_recur'] == true) {
-            $gateway_URL    = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
+            $gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
 
             $TokenGatewayRequest = new TokenGatewayRequest; // Create appropriate object from api includes
             if ( ($TokenGatewayRequest == null) || ( ! ($TokenGatewayRequest instanceof TokenGatewayRequest)) ) {
