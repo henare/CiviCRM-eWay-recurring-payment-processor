@@ -31,60 +31,60 @@ class TokenGatewayRequest
     public $eWayPassword;
 
     // Create Customer values
-    public $CustomerTitle;
-    public $CustomerFirstName;
-    public $CustomerLastName;
-    public $CustomerAddress;
-    public $CustomerSuburb;
-    public $CustomerState;
-    public $CustomerCompany;
-    public $CustomerPostCode;
-    public $CustomerCountry;
-    public $CustomerEmail;
-    public $CustomerFax;
-    public $CustomerPhone;
-    public $CustomerMobile;
+    public $Title;
+    public $FirstName;
+    public $LastName;
+    public $Address;
+    public $Suburb;
+    public $State;
+    public $Company;
+    public $PostCode;
+    public $Country;
+    public $Email;
+    public $Fax;
+    public $Phone;
+    public $Mobile;
     public $CustomerRef;
-    public $CustomerJobDesc;
-    public $CustomerComments;
-    public $CustomerURL;
-    public $CustomerCCNumber;
-    public $CustomerCCNameOnCard;
-    public $CustomerCCExpiryMonth;
-    public $CustomerCCExpiryYear;
+    public $JobDesc;
+    public $Comments;
+    public $URL;
+    public $CCNumber;
+    public $CCNameOnCard;
+    public $CCExpiryMonth;
+    public $CCExpiryYear;
 
     public function createCustomerXML() {
         $xml = "
         <soap:Header>
             <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-            <eWAYCustomerID>$eWayCustomerID</eWAYCustomerID>
-            <Username>$eWayUsername</Username>
-            <Password>$eWayPassword</Password>
+                <eWAYCustomerID>$eWayCustomerID</eWAYCustomerID>
+                <Username>$eWayUsername</Username>
+                <Password>$eWayPassword</Password>
             </eWAYHeader>
         </soap:Header>
         <soap:Body>
             <CreateCustomer xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-            <Title>$CustomerTitle</Title>
-            <FirstName>$CustomerFirstName</FirstName>
-            <LastName>$CustomerLastName</LastName>
-            <Address>$CustomerAddress</Address>
-            <Suburb>$CustomerSuburb</Suburb>
-            <State>$CustomerState</State>
-            <Company>$CustomerCompany</Company>
-            <PostCode>$CustomerPostCode</PostCode>
-            <Country>$CustomerCountry</Country>
-            <Email>$CustomerEmail</Email>
-            <Fax>$CustomerFax</Fax>
-            <Phone>$CustomerPhone</Phone>
-            <Mobile>$CustomerMobile</Mobile>
-            <CustomerRef>$CustomerRef</CustomerRef>
-            <JobDesc>$CustomerJobDesc</JobDesc>
-            <Comments>$CustomerComments</Comments>
-            <URL>$CustomerURL<URL>
-            <CCNumber>$CustomerCCNumber</CCNumber>
-            <CCNameOnCard>$CustomerCCNameOnCard</CCNameOnCard>
-            <CCExpiryMonth>$CustomerCCExpiryMonth</CCExpiryMonth>
-            <CCExpiryYear>$CustomerCCExpiryYear</CCExpiryYear>
+                <Title>$Title</Title>
+                <FirstName>$FirstName</FirstName>
+                <LastName>$LastName</LastName>
+                <Address>$Address</Address>
+                <Suburb>$Suburb</Suburb>
+                <State>$State</State>
+                <Company>$Company</Company>
+                <PostCode>$PostCode</PostCode>
+                <Country>$Country</Country>
+                <Email>$Email</Email>
+                <Fax>$Fax</Fax>
+                <Phone>$Phone</Phone>
+                <Mobile>$Mobile</Mobile>
+                <CustomerRef>$CustomerRef</CustomerRef>
+                <JobDesc>$JobDesc</JobDesc>
+                <Comments>$Comments</Comments>
+                <URL>$URL<URL>
+                <CCNumber>$CCNumber</CCNumber>
+                <CCNameOnCard>$CCNameOnCard</CCNameOnCard>
+                <CCExpiryMonth>$CCExpiryMonth</CCExpiryMonth>
+                <CCExpiryYear>$CCExpiryYear</CCExpiryYear>
             </CreateCustomer>
         </soap:Body>
         ";
