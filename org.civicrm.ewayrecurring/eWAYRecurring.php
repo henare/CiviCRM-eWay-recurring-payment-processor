@@ -238,20 +238,16 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
 
             CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $RebillPayment );
 
-            // I Haven't been using this, but would be good to add back in at some point. Duplicate IDs aren't allowed by the database scheme, but still, would be good to be tidier.
             //----------------------------------------------------------------------------------------------------
             // Check to see if we have a duplicate before we send
             //----------------------------------------------------------------------------------------------------
-            /*
             if ( $this->_checkDupe( $params['invoiceID'] ) ) {
                 return self::errorExit(9003, 'It appears that this transaction is a duplicate.  Have you already submitted the form once?  If so there may have been a connection problem.  Check your email for a receipt from eWAY.  If you do not receive a receipt within 2 hours you can try your transaction again.  If you continue to have problems please contact the site administrator.' );
             }
-            */
 
             //----------------------------------------------------------------------------------------------------
             // Convert to XML and send the payment information
             //----------------------------------------------------------------------------------------------------
-
             $requestxml = $RebillPayment->ToXML();
             $submit = curl_init( $gateway_URL );
 
