@@ -583,6 +583,8 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             $errorMsg[] = ts( 'eWAY Gateway URL is not set for this payment processor' );
         }
 
+        // TODO: Check that recurring config values have been set
+
         if ( ! empty( $errorMsg ) ) {
             return implode( '<p>', $errorMsg );
         } else {
