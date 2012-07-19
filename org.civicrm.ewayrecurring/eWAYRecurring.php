@@ -1,9 +1,7 @@
 <?php
 /*
-This is a combination of the original eWay payment processor, with customisations to handle recurring payments as well. Originally started by Chris Ward at Community Builders in 2012
-
  +--------------------------------------------------------------------+
- | CiviCRM version 3.4                                                |
+ | CiviCRM                                                            |
  +--------------------------------------------------------------------+
  | This file is a part of CiviCRM.                                    |
  |                                                                    |
@@ -27,11 +25,17 @@ This is a combination of the original eWay payment processor, with customisation
 
 /*
  +--------------------------------------------------------------------+
- | eWAY Core Payment Module for CiviCRM version 3.4 & 1.9             |
+ | eWay Recurring Payment Processor Extension                         |
  +--------------------------------------------------------------------+
  | Licensed to CiviCRM under the Academic Free License version 3.0    |
  |                                                                    |
- | Written & Contributed by Dolphin Software P/L - March 2008         |
+ | Originally written & contributed by Dolphin Software P/L - March   |
+ | 2008                                                               |
+ |                                                                    |
+ | This is a combination of the original eWay payment processor, with |
+ | customisations to handle recurring payments as well. Originally    |
+ | started by Chris Ward at Community Builders in 2012.               |
+ |                                                                    |
  +--------------------------------------------------------------------+
  |                                                                    |
  | This file is a part of CiviCRM.                                    |
@@ -44,9 +48,6 @@ This is a combination of the original eWay payment processor, with customisation
  |                                                                    |
  | Plus a bit of our own code of course - Peter Barwell               |
  | contact PB@DolphinSoftware.com.au if required.                     |
- |                                                                    |
- | NOTE: This initial eWAY module does not yet allow for recuring     |
- |       payments - contact Peter Barwell or add yourself (or both)   |
  |                                                                    |
  | NOTE: The eWAY gateway only allows a single currency per account   |
  |       (per eWAY CustomerID) ie you can only have one currency per  |
