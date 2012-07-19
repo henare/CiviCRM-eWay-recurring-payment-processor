@@ -61,38 +61,38 @@ class TokenGatewayRequest
 
     public function createCustomerXML() {
         $xml = "
-        <soap:Header>
-            <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-                <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
-                <Username>$this->eWayUsername</Username>
-                <Password>$this->eWayPassword</Password>
-            </eWAYHeader>
-        </soap:Header>
-        <soap:Body>
-            <CreateCustomer xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-                <Title>$this->Title</Title>
-                <FirstName>$this->FirstName</FirstName>
-                <LastName>$this->LastName</LastName>
-                <Address>$this->Address</Address>
-                <Suburb>$this->Suburb</Suburb>
-                <State>$this->State</State>
-                <Company>$this->Company</Company>
-                <PostCode>$this->PostCode</PostCode>
-                <Country>$this->Country</Country>
-                <Email>$this->Email</Email>
-                <Fax>$this->Fax</Fax>
-                <Phone>$this->Phone</Phone>
-                <Mobile>$this->Mobile</Mobile>
-                <CustomerRef>$this->CustomerRef</CustomerRef>
-                <JobDesc>$this->JobDesc</JobDesc>
-                <Comments>$this->Comments</Comments>
-                <URL>$this->URL<URL>
-                <CCNumber>$this->CCNumber</CCNumber>
-                <CCNameOnCard>$this->CCNameOnCard</CCNameOnCard>
-                <CCExpiryMonth>$this->CCExpiryMonth</CCExpiryMonth>
-                <CCExpiryYear>$this->CCExpiryYear</CCExpiryYear>
-            </CreateCustomer>
-        </soap:Body>
+            <soap:Header>
+                <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
+                    <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
+                    <Username>$this->eWayUsername</Username>
+                    <Password>$this->eWayPassword</Password>
+                </eWAYHeader>
+            </soap:Header>
+            <soap:Body>
+                <CreateCustomer xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
+                    <Title>$this->Title</Title>
+                    <FirstName>$this->FirstName</FirstName>
+                    <LastName>$this->LastName</LastName>
+                    <Address>$this->Address</Address>
+                    <Suburb>$this->Suburb</Suburb>
+                    <State>$this->State</State>
+                    <Company>$this->Company</Company>
+                    <PostCode>$this->PostCode</PostCode>
+                    <Country>$this->Country</Country>
+                    <Email>$this->Email</Email>
+                    <Fax>$this->Fax</Fax>
+                    <Phone>$this->Phone</Phone>
+                    <Mobile>$this->Mobile</Mobile>
+                    <CustomerRef>$this->CustomerRef</CustomerRef>
+                    <JobDesc>$this->JobDesc</JobDesc>
+                    <Comments>$this->Comments</Comments>
+                    <URL>$this->URL<URL>
+                    <CCNumber>$this->CCNumber</CCNumber>
+                    <CCNameOnCard>$this->CCNameOnCard</CCNameOnCard>
+                    <CCExpiryMonth>$this->CCExpiryMonth</CCExpiryMonth>
+                    <CCExpiryYear>$this->CCExpiryYear</CCExpiryYear>
+                </CreateCustomer>
+            </soap:Body>
         ";
 
         return $xml;
@@ -100,21 +100,21 @@ class TokenGatewayRequest
 
     public function processPaymentXML() {
         $xml = "
-        <soap:Header>
-            <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-                <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
-                <Username>$this->eWayUsername</Username>
-                <Password>$this->eWayPassword</Password>
-            </eWAYHeader>
-        </soap:Header>
-        <soap:Body>
-            <ProcessPayment xmlns=\"https://www.eway.com.au/gateway/managedpayment\">
-                <managedCustomerID>$this->managedCustomerID</managedCustomerID>
-                <amount>$this->amount</amount>
-                <invoiceReference>$this->invoiceReference</invoiceReference>
-                <invoiceDescription>$this->invoiceDescription</invoiceDescription>
-            </ProcessPayment>
-        </soap:Body>
+            <soap:Header>
+                <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
+                    <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
+                    <Username>$this->eWayUsername</Username>
+                    <Password>$this->eWayPassword</Password>
+                </eWAYHeader>
+            </soap:Header>
+            <soap:Body>
+                <ProcessPayment xmlns=\"https://www.eway.com.au/gateway/managedpayment\">
+                    <managedCustomerID>$this->managedCustomerID</managedCustomerID>
+                    <amount>$this->amount</amount>
+                    <invoiceReference>$this->invoiceReference</invoiceReference>
+                    <invoiceDescription>$this->invoiceDescription</invoiceDescription>
+                </ProcessPayment>
+            </soap:Body>
         ";
 
         return $xml;
