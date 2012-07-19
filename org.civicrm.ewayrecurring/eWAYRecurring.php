@@ -151,7 +151,7 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         // Prepare some composite data from _paymentProcessor fields, data that is shared across one off and recurring payments.
         //-------------------------------------------------------------
         $expireYear    = substr ($params['year'], 2, 2);
-        $expireMonth   = sprintf('%02d', (int) $params['month']);
+        $expireMonth   = sprintf('%02d', (int) $params['month']); // Pad month with zeros
         $description   = $params['description'];         // CiviCRM V2.0 - Picks up description
         $txtOptions    = "";
         $amountInCents = round(((float) $params['amount']) * 100);
