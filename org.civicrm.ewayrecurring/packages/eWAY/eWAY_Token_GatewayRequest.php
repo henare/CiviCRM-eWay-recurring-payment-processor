@@ -63,34 +63,34 @@ class TokenGatewayRequest
         $xml = "
         <soap:Header>
             <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-                <eWAYCustomerID>$eWayCustomerID</eWAYCustomerID>
-                <Username>$eWayUsername</Username>
-                <Password>$eWayPassword</Password>
+                <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
+                <Username>$this->eWayUsername</Username>
+                <Password>$this->eWayPassword</Password>
             </eWAYHeader>
         </soap:Header>
         <soap:Body>
             <CreateCustomer xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-                <Title>$Title</Title>
-                <FirstName>$FirstName</FirstName>
-                <LastName>$LastName</LastName>
-                <Address>$Address</Address>
-                <Suburb>$Suburb</Suburb>
-                <State>$State</State>
-                <Company>$Company</Company>
-                <PostCode>$PostCode</PostCode>
-                <Country>$Country</Country>
-                <Email>$Email</Email>
-                <Fax>$Fax</Fax>
-                <Phone>$Phone</Phone>
-                <Mobile>$Mobile</Mobile>
-                <CustomerRef>$CustomerRef</CustomerRef>
-                <JobDesc>$JobDesc</JobDesc>
-                <Comments>$Comments</Comments>
-                <URL>$URL<URL>
-                <CCNumber>$CCNumber</CCNumber>
-                <CCNameOnCard>$CCNameOnCard</CCNameOnCard>
-                <CCExpiryMonth>$CCExpiryMonth</CCExpiryMonth>
-                <CCExpiryYear>$CCExpiryYear</CCExpiryYear>
+                <Title>$this->Title</Title>
+                <FirstName>$this->FirstName</FirstName>
+                <LastName>$this->LastName</LastName>
+                <Address>$this->Address</Address>
+                <Suburb>$this->Suburb</Suburb>
+                <State>$this->State</State>
+                <Company>$this->Company</Company>
+                <PostCode>$this->PostCode</PostCode>
+                <Country>$this->Country</Country>
+                <Email>$this->Email</Email>
+                <Fax>$this->Fax</Fax>
+                <Phone>$this->Phone</Phone>
+                <Mobile>$this->Mobile</Mobile>
+                <CustomerRef>$this->CustomerRef</CustomerRef>
+                <JobDesc>$this->JobDesc</JobDesc>
+                <Comments>$this->Comments</Comments>
+                <URL>$this->URL<URL>
+                <CCNumber>$this->CCNumber</CCNumber>
+                <CCNameOnCard>$this->CCNameOnCard</CCNameOnCard>
+                <CCExpiryMonth>$this->CCExpiryMonth</CCExpiryMonth>
+                <CCExpiryYear>$this->CCExpiryYear</CCExpiryYear>
             </CreateCustomer>
         </soap:Body>
         ";
@@ -102,17 +102,17 @@ class TokenGatewayRequest
         $xml = "
         <soap:Header>
             <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
-                <eWAYCustomerID>$eWayCustomerID</eWAYCustomerID>
-                <Username>$eWayUsername</Username>
-                <Password>$eWayPassword</Password>
+                <eWAYCustomerID>$this->eWayCustomerID</eWAYCustomerID>
+                <Username>$this->eWayUsername</Username>
+                <Password>$this->eWayPassword</Password>
             </eWAYHeader>
         </soap:Header>
         <soap:Body>
             <ProcessPayment xmlns=\"https://www.eway.com.au/gateway/managedpayment\">
-                <managedCustomerID>$managedCustomerID</managedCustomerID>
-                <amount>$amount</amount>
-                <invoiceReference>$invoiceReference</invoiceReference>
-                <invoiceDescription>$invoiceDescription</invoiceDescription>
+                <managedCustomerID>$this->managedCustomerID</managedCustomerID>
+                <amount>$this->amount</amount>
+                <invoiceReference>$this->invoiceReference</invoiceReference>
+                <invoiceDescription>$this->invoiceDescription</invoiceDescription>
             </ProcessPayment>
         </soap:Body>
         ";
