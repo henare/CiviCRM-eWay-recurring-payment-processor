@@ -60,29 +60,7 @@
 
 /*
  -----------------------------------------------------------------------------------------------
- From the eWAY supplied 'Web.config' dated 25-Sep-2006 - check date and update links if required
- -----------------------------------------------------------------------------------------------
-
-   LIVE gateway with CVN
-   https://www.eway.com.au/gateway_cvn/xmlpayment.asp
-
-   LIVE gateway without CVN
-   https://www.eway.com.au/gateway/xmlpayment.asp
-
-
-   Test gateway with CVN
-   https://www.eway.com.au/gateway_cvn/xmltest/TestPage.asp
-
-   Test gateway without CVN
-   https://www.eway.com.au/gateway/xmltest/TestPage.asp
-
-
-   LIVE gateway for Stored Transactions
-   https://www.eway.com.au/gateway/xmlstored.asp
-
-
- -----------------------------------------------------------------------------------------------
- From the eWAY web-site - http://www.eway.com.au/Support/Developer/PaymentsRealTime.aspx
+ From the eWay web-site - http://www.eway.com.au/Support/Developer/PaymentsRealTime.aspx
  -----------------------------------------------------------------------------------------------
    The test Customer ID is 87654321 - this is the only ID that will work on the test gateway.
    The test Credit Card number is 4444333322221111
@@ -92,7 +70,6 @@
 
  -----------------------------------------------------------------------------------------------
 */
-
 
 require_once 'CRM/Core/Payment.php';
 
