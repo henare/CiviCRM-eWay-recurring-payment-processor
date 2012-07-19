@@ -87,8 +87,6 @@ class TokenGatewayRequest
 
     public $RebillEndDate;
 
-    public $ewayURL;
-
     function TokenGatewayRequest()
     {
         // Empty Constructor
