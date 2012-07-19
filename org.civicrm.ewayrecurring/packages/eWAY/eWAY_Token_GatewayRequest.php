@@ -53,6 +53,12 @@ class TokenGatewayRequest
     public $CCExpiryMonth;
     public $CCExpiryYear;
 
+    // Process Payment values
+    public $managedCustomerID;
+    public $amount;
+    public $invoiceReference;
+    public $invoiceDescription;
+
     public function createCustomerXML() {
         $xml = "
         <soap:Header>
@@ -86,6 +92,28 @@ class TokenGatewayRequest
                 <CCExpiryMonth>$CCExpiryMonth</CCExpiryMonth>
                 <CCExpiryYear>$CCExpiryYear</CCExpiryYear>
             </CreateCustomer>
+        </soap:Body>
+        ";
+
+        return $xml;
+    }
+
+    public function processPaymentXML() {
+        $xml = "
+        <soap:Header>
+            <eWAYHeader xmlns=\"http://www.eway.com.au/gateway/managedPayment\">
+                <eWAYCustomerID>$eWayCustomerID</eWAYCustomerID>
+                <Username>$eWayUsername</Username>
+                <Password>$eWayPassword</Password>
+            </eWAYHeader>
+        </soap:Header>
+        <soap:Body>
+            <ProcessPayment xmlns=\"https://www.eway.com.au/gateway/managedpayment\">
+                <managedCustomerID>$managedCustomerID</managedCustomerID>
+                <amount>$amount</amount>
+                <invoiceReference>$invoiceReference</invoiceReference>
+                <invoiceDescription>$invoiceDescription</invoiceDescription>
+            </ProcessPayment>
         </soap:Body>
         ";
 
