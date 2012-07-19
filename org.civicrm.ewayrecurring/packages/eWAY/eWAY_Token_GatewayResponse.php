@@ -36,11 +36,6 @@ class TokenGatewayResponse
     var $txError               = "";
     var $txBeagleScore         = "";
 
-    function TokenGatewayResponse()
-    {
-       // Empty Constructor
-    }
-
     function ProcessResponse($Xml)
     {
         /***********************************************************************************************************************
