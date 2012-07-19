@@ -25,6 +25,9 @@
 
 class TokenGatewayResponse
 {
+    // Create Customer values
+    public $UpdateCustomerResult;
+
     var $txAmount              = 0;
     var $txTransactionNumber   = "";
     var $txInvoiceReference    = "";
@@ -35,6 +38,11 @@ class TokenGatewayResponse
     var $txAuthCode            = "";
     var $txError               = "";
     var $txBeagleScore         = "";
+
+    function processCreateCustomerResponse($xml)
+    {
+        $this->UpdateCustomerResult = $this->GetNodeValue('UpdateCustomerResult', $xml);
+    }
 
     function ProcessResponse($Xml)
     {
