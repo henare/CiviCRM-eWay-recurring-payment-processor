@@ -95,10 +95,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
     **********************************************************/
     function __construct( $mode, &$paymentProcessor )
     {
-        // require custom eWAY API libraries for recurring payments
-        require_once 'packages/eWAY/eWAY_Token_GatewayRequest.php';
-        require_once 'packages/eWAY/eWAY_Token_GatewayResponse.php';
-
         // As this handles recurring and non-recurring, we also need to include original api libraries
         require_once 'packages/eWAY/eWAY_GatewayRequest.php';
         require_once 'packages/eWAY/eWAY_GatewayResponse.php';
@@ -181,15 +177,51 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         if ($params['is_recur'] == true) {
             $gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
 
-            $TokenGatewayRequest = new TokenGatewayRequest; // Create appropriate object from api includes
-            if ( ($TokenGatewayRequest == null) || ( ! ($TokenGatewayRequest instanceof TokenGatewayRequest)) ) {
-                return self::errorExit( 9001, "Error: Unable to create eWAY Request object.");
+            $soap_client = new SoapClient($gateway_URL);
+
+            // Set up SOAP headers
+            $headers = array(
+                'eWAYCustomerID' => $ewayCustomerID,
+                'Username'       => $this->_paymentProcessor['user_name'],
+                'Password'       => $this->_paymentProcessor['password']
+            );
+            $header = new SoapHeader('https://www.eway.com.au/gateway/managedpayment', 'eWAYHeader', $headers);
+            $soap_client->__setSoapHeaders($header);
+
+            // Add eWay customer
+            $customerinfo = array(
+                'Title' => 'Mr.', // Crazily eWay makes this a mandatory field with fixed values
+                'FirstName' => $params['first_name'],
+                'LastName' => $params['last_name'],
+                'Address' => $params['street_address'],
+                'Suburb' => $params['city'],
+                'State' => $params['state_province'],
+                'Company' => '',
+                'PostCode' => $params['postal_code'],
+                // 'Country' => $params['country'],
+                // TODO: Remove this hardcoded hack
+                'Country' => 'au',
+                'Email' => $params['email'],
+                'Fax' => '',
+                'Phone' => '',
+                'Mobile' => '',
+                'CustomerRef' => '',
+                'JobDesc' => $params['description'],
+                'Comments' => '',
+                'URL' => '',
+                'CCNumber' => $params['credit_card_number'],
+                'CCNameOnCard' => $credit_card_name,
+                'CCExpiryMonth' => $expireMonth,
+                'CCExpiryYear' => $expireYear
+            );
+            try{
+                $result = $soap_client->CreateCustomer($customerinfo);
+            }catch(Exception $e){
+                return self::errorExit(9010, $e->getMessage());
             }
 
-            $TokenGatewayResponse = new TokenGatewayResponse; // Likewise, create a response object
-            if ( ($TokenGatewayResponse == null) || ( ! ($TokenGatewayResponse instanceof TokenGatewayResponse) ) ) {
-                return self::errorExit( 9002, "Error: Unable to create eWAY Response object.");
-            }
+            // We've created the customer successfully
+            $managed_customer_id = $result->CreateCustomerResult;
 
             //----------------------------------------------------------------------------------------------------
             // We use CiviCRM's param's 'invoiceID' as the unique transaction token to feed to eWAY
@@ -198,128 +230,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             // should be alright
             //----------------------------------------------------------------------------------------------------
             $uniqueTrnxNum = substr($params['invoiceID'], 0, 16);
-
-            /***********************
-             * Create request object
-             */
-            // Header values
-            $TokenGatewayRequest->eWayCustomerID = $ewayCustomerID;
-            $TokenGatewayRequest->eWayUsername = $this->_paymentProcessor['user_name'];
-            $TokenGatewayRequest->eWayPassword = $this->_paymentProcessor['password'];
-
-            // Create Customer values
-            // $TokenGatewayRequest->Title = ;
-            $TokenGatewayRequest->FirstName = $params['first_name'];
-            $TokenGatewayRequest->LastName = $params['last_name'];
-            $TokenGatewayRequest->Address = $params['street_address'];
-            $TokenGatewayRequest->Suburb = $params['city'];
-            $TokenGatewayRequest->State = $params['state_province'];
-            // $TokenGatewayRequest->Company = ;
-            $TokenGatewayRequest->PostCode = $params['postal_code'];
-            $TokenGatewayRequest->Country = $params['country'];
-            $TokenGatewayRequest->Email = $params['email'];
-            // $TokenGatewayRequest->Fax = ;
-            // $TokenGatewayRequest->Phone = ;
-            // $TokenGatewayRequest->Mobile = ;
-            // $TokenGatewayRequest->CustomerRef = ;
-            $TokenGatewayRequest->JobDesc = $params['description'];
-            // $TokenGatewayRequest->Comments = ;
-            // $TokenGatewayRequest->URL = ;
-            $TokenGatewayRequest->CCNumber = $params['credit_card_number'];
-            $TokenGatewayRequest->CCNameOnCard = $credit_card_name;
-            $TokenGatewayRequest->CCExpiryMonth = $expireMonth;
-            $TokenGatewayRequest->CCExpiryYear = $expireYear;
-
-            // ADD EWAY CUSTOMER HERE
-            //-------------------------------------------------
-            // Convert to XML and send the customer information
-            //-------------------------------------------------
-            $create_customer_xml = $TokenGatewayRequest->createCustomerXML();
-
-            //Set up cURL
-            $submit = curl_init($gateway_URL);
-            if (!$submit) {
-                return self::errorExit(9004, 'Could not initiate connection to payment gateway');
-            }
-
-            curl_setopt($submit, CURLOPT_URL, $gateway_URL);
-            curl_setopt($submit, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($submit, CURLOPT_TIMEOUT, 36000);
-            curl_setopt($submit, CURLOPT_POST, 1);
-            // if open_basedir or safe_mode are enabled in PHP settings CURLOPT_FOLLOWLOCATION won't work so don't apply it
-            // it's not really required CRM-5841
-            if (ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) {
-                curl_setopt($submit, CURLOPT_FOLLOWLOCATION, 1);  // ensures any Location headers are followed
-            }
-
-            // Set the converted customer details to be posted
-            curl_setopt($submit, CURLOPT_POSTFIELDS, $create_customer_xml);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array("SOAPAction: 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer'"));
-
-            // Send the data out over the wire
-            //--------------------------------
-            $responseData = curl_exec($submit);
-
-            return self::errorExit( 69, $responseData);
-
-            ob_start();
-            var_dump($responseData);
-            $foo = ob_get_contents();
-            ob_end_clean();
-            return self::errorExit( 69, $foo);
-
-            //----------------------------------------------------------------------------------------------------
-            // See if we had a curl error - if so tell 'em and bail out
-            //
-            // NOTE: curl_error does not return a logical value (see its documentation), but
-            //       a string, which is empty when there was no error.
-            //----------------------------------------------------------------------------------------------------
-            if ( (curl_errno($submit) > 0) || (strlen(curl_error($submit)) > 0) ) {
-                $errorNum  = curl_errno($submit);
-                $errorDesc = curl_error($submit);
-
-                if ($errorNum == 0) // Paranoia - in the unlikley event that 'curl' errno fails
-                    $errorNum = 9005;
-
-                if (strlen($errorDesc) == 0) // Paranoia - in the unlikley event that 'curl' error fails
-                    $errorDesc = "Connection to eWAY payment gateway failed";
-
-                return self::errorExit( $errorNum, $errorDesc );
-            }
-
-            //----------------------------------------------------------------------------------------------------
-            // If null data returned - tell 'em and bail out
-            //
-            // NOTE: You will not necessarily get a string back, if the request failed for
-            //       any reason, the return value will be the boolean false.
-            //----------------------------------------------------------------------------------------------------
-            if ( ( $responseData === false )  || (strlen($responseData) == 0) ) {
-                return self::errorExit( 9006, "Error: Connection to payment gateway failed - no data returned.");
-            }
-
-            //----------------------------------------------------------------------------------------------------
-            // If gateway returned no data - tell 'em and bail out
-            //----------------------------------------------------------------------------------------------------
-            if ( empty($responseData) ) {
-                return self::errorExit( 9007, "Error: No data returned from payment gateway.");
-            }
-
-            //----------------------------------------------------------------------------------------------------
-            // Success so far - close the curl and check the data
-            //----------------------------------------------------------------------------------------------------
-            curl_close( $submit );
-
-            //----------------------------------------------------------------------------------------------------
-            // Payment succesfully sent to gateway - process the response now
-            //----------------------------------------------------------------------------------------------------
-            $RebillResponse->ProcessResponse($responseData);
-
-            // TODO: Now process the payment
-            // Process Payment values
-            // $TokenGatewayRequest->managedCustomerID = ;
-            // $TokenGatewayRequest->amount = ;
-            // $TokenGatewayRequest->invoiceReference = ;
-            // $TokenGatewayRequest->invoiceDescription = ;
 
             CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $RebillPayment );
 
