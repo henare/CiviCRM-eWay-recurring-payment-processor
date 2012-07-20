@@ -230,62 +230,38 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             //----------------------------------------------------------------------------------------------------
             $uniqueTrnxNum = substr($params['invoiceID'], 0, 16);
 
-            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $RebillPayment );
+            // Process the first payment
+            $paymentinfo = array(
+                'managedCustomerID' => $managed_customer_id,
+                'amount' => $amountInCents,
+                'InvoiceReference' => $uniqueTrnxNum,
+                'InvoiceDescription' => $params['description']
+            );
+            // TODO: We should probably do this before creating the customer too
+            // Hook to allow payment info to be changed before submitting it
+            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $paymentinfo );
+            try{
+                $result = $soap_client->ProcessPayment($paymentinfo);
+            }catch(Exception $e){
+                return self::errorExit(9011, $e->getMessage());
+            }
 
-            //----------------------------------------------------------------------------------------------------
+            // We've processed the payment successfully
+            $eway_response = $result->ewayResponse;
+
+            //----------------------------------------------------------
             // See if we got an OK result - if not tell 'em and bail out
-            //----------------------------------------------------------------------------------------------------
-            // Structure of error response in recurring payments is slightly different and less helpful.
-            if ( self::isRecurError( $RebillResponse ) ) {
-                $eWayTrxnErrorDetails = $RebillResponse->ErrorDetails();
-                $eWayTrxnErrorSeverity = $RebillResponse->ErrorSeverity();
-
-                return self::errorExit( 9008, "Error: [" . $eWayTrxnErrorSeverity . "] - " . $eWayTrxnErrorDetails . ".");
+            //----------------------------------------------------------
+            if (!$eway_response->ewayTrxnStatus) {
+                return self::errorExit(9008, $eway_response->ewayTrxnError);
             }
 
-            // As noted in documentation, we should be able to process response from eWay but it wouldn't work, if this is fixed, re-enable this code, with any relevant modification.
-
-            //-----------------------------------------------------------------------------------------------------
-            // Cross-Check - the unique 'TrxnReference' we sent out should match the just received 'TrxnReference'
-            //
-            // PLEASE NOTE: If this occurs (which is highly unlikely) its a serious error as it would mean we have
-            //              received an OK status from eWAY, but their Gateway has not returned the correct unique
-            //              token - ie something is broken, BUT money has been taken from the client's account,
-            //              so we can't very well error-out as CiviCRM will then not process the registration.
-            //              There is an error message commented out here but my prefered response to this unlikley
-            //              possibility is to email 'support@eWAY.com.au'
-            //-----------------------------------------------------------------------------------------------------
-            //$eWayTrxnReference_OUT = $RebillPayment->GetTransactionNumber();
-            //$eWayTrxnReference_IN  = $eWAYResponse->InvoiceReference();
-            /*
-            if ($eWayTrxnReference_IN != $eWayTrxnReference_OUT) {
-                // return self::errorExit( 9009, "Error: Unique Trxn code was not returned by eWAY Gateway. This is extremely unusual! Please contact the administrator of this site immediately with details of this transaction.");
-
-                self::send_alert_email( $eWAYResponse->TransactionNumber(), $eWayTrxnReference_OUT, $eWayTrxnReference_IN, $requestxml, $responseData);
-            }
-            */
-
-
-           //=============
-           // Success !
-           //=============
-
-            // Here for reference is how the one off eWay payment processor process results from eWay with an ideal of what should happen with the recurring response, but as noted, it doesn't do anything!
-            /*
-            $beaglestatus = $eWAYResponse->BeagleScore();
-            if ( !empty( $beaglestatus ) ) {
-                $beaglestatus = ": ". $beaglestatus;
-            }
-            $params['trxn_result_code'] = $eWAYResponse->Status() . $beaglestatus;
-            $params['gross_amount']     = $eWAYResponse->Amount();
-            $params['trxn_id']          = $eWAYResponse->TransactionNumber();
-
-            return $params;
-            */
-
-            $params['trxn_result_code'] = True;
-            $params['gross_amount']     = $amountInCents;
-            $params['trxn_id']          = $uniqueTrnxNum;
+            //=============
+            // Success!
+            //=============
+            $params['trxn_result_code'] = $eway_response->ewayAuthCode;
+            $params['gross_amount']     = $eway_response->ewayReturnAmount;
+            $params['trxn_id']          = $eway_response->ewayTrxnNumber;
         }
         // This is a one off payment, most of this is lifted straight from the original code, so I wont document it.
         else
@@ -518,16 +494,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         $status = $response->Status();
 
         if ( (stripos($status, "true")) === false ) {
-            return true;
-        }
-        return false;
-    }
-
-    // The Recurring eWay error processing returns different values
-    function isRecurError( &$response)
-    {
-        $status = $response->Status();
-        if ( (stripos($status, "success")) === false ) {
             return true;
         }
         return false;
