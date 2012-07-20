@@ -222,6 +222,14 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             // We've created the customer successfully
             $managed_customer_id = $result->CreateCustomerResult;
 
+            // Save the eWay customer token in the recurring contribution's processor_id field
+            CRM_Core_DAO::setFieldValue(
+                'CRM_Contribute_DAO_ContributionRecur',
+                $params['contributionRecurID'],
+                'processor_id',
+                $managed_customer_id
+            );
+
             //----------------------------------------------------------------------------------------------------
             // We use CiviCRM's param's 'invoiceID' as the unique transaction token to feed to eWAY
             // Trouble is that eWAY only accepts 16 chars for the token, while CiviCRM's invoiceID is an 32.
