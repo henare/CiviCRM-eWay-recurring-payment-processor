@@ -259,7 +259,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             //=============
             // Success!
             //=============
-            $params['contribtion_status_id'] = 1; // Marks the contribution as complete
             $params['trxn_result_code']      = $eway_response->ewayAuthCode;
             $params['gross_amount']          = $eway_response->ewayReturnAmount;
             $params['trxn_id']               = $eway_response->ewayTrxnNumber;
