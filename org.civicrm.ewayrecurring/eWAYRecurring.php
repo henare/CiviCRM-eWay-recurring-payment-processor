@@ -148,7 +148,6 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         //-------------------------------------------------------------
         $expireYear    = substr ($params['year'], 2, 2);
         $expireMonth   = sprintf('%02d', (int) $params['month']); // Pad month with zeros
-        $description   = $params['description'];         // CiviCRM V2.0 - Picks up description
         $txtOptions    = "";
         $amountInCents = round(((float) $params['amount']) * 100);
         $credit_card_name  = $params['first_name'] . " ";
@@ -333,7 +332,7 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
             $eWAYRequest->PurchaserEmailAddress($params['email']);  //   50 Chars - ewayCustomerEmail
             $eWAYRequest->PurchaserAddress($fullAddress);  //  255 Chars - ewayCustomerAddress
             $eWAYRequest->PurchaserPostalCode($params['postal_code']);  //    6 Chars - ewayCustomerPostcode
-            $eWAYRequest->InvoiceDescription($description);  // 1000 Chars - ewayCustomerInvoiceDescription
+            $eWAYRequest->InvoiceDescription($params['description']);  // 1000 Chars - ewayCustomerInvoiceDescription
             $eWAYRequest->InvoiceReference($params['invoiceID']);  //   50 Chars - ewayCustomerInvoiceRef
             $eWAYRequest->CardHolderName($credit_card_name);  //   50 Chars - ewayCardHoldersName            - Required
             $eWAYRequest->CardNumber($params['credit_card_number']);  //   20 Chars - ewayCardNumber                 - Required
