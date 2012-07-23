@@ -213,6 +213,11 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
                 'CCExpiryMonth' => $expireMonth,
                 'CCExpiryYear' => $expireYear
             );
+
+            // Hook to allow customer info to be changed before submitting it
+            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $customerinfo );
+
+            // Create the customer via the API
             try{
                 $result = $soap_client->CreateCustomer($customerinfo);
             }catch(Exception $e){
@@ -230,46 +235,9 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
                 $managed_customer_id
             );
 
-            //----------------------------------------------------------------------------------------------------
-            // We use CiviCRM's param's 'invoiceID' as the unique transaction token to feed to eWAY
-            // Trouble is that eWAY only accepts 16 chars for the token, while CiviCRM's invoiceID is an 32.
-            // As its made from a "$invoiceID = md5(uniqid(rand(), true));" then using the fierst 16 chars
-            // should be alright
-            //----------------------------------------------------------------------------------------------------
-            $uniqueTrnxNum = substr($params['invoiceID'], 0, 16);
-
-            // Process the first payment
-            $paymentinfo = array(
-                'managedCustomerID' => $managed_customer_id,
-                'amount' => $amountInCents,
-                'InvoiceReference' => $uniqueTrnxNum,
-                'InvoiceDescription' => $params['description']
-            );
-            // TODO: We should probably do this before creating the customer too
-            // Hook to allow payment info to be changed before submitting it
-            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $paymentinfo );
-            try{
-                $result = $soap_client->ProcessPayment($paymentinfo);
-            }catch(Exception $e){
-                return self::errorExit(9011, $e->getMessage());
-            }
-
-            // We've processed the payment successfully
-            $eway_response = $result->ewayResponse;
-
-            //----------------------------------------------------------
-            // See if we got an OK result - if not tell 'em and bail out
-            //----------------------------------------------------------
-            if (!$eway_response->ewayTrxnStatus) {
-                return self::errorExit(9008, $eway_response->ewayTrxnError);
-            }
-
-            //=============
-            // Success!
-            //=============
-            $params['trxn_result_code']      = $eway_response->ewayAuthCode;
-            $params['gross_amount']          = $eway_response->ewayReturnAmount;
-            $params['trxn_id']               = $eway_response->ewayTrxnNumber;
+            /* And we're done - this payment will staying in a pending state until it's processed
+             * by the cronjob
+             */
         }
         // This is a one off payment, most of this is lifted straight from the original code, so I wont document it.
         else
