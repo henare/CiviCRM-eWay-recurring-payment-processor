@@ -548,7 +548,7 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
     {
         $errorMsg = array();
 
-        if ( empty( $this->_paymentProcessor['user_name'] ) ) {
+        if ( empty( $this->_paymentProcessor['subject'] ) ) {
             $errorMsg[] = ts( 'eWAY CustomerID is not set for this payment processor' );
         }
 
