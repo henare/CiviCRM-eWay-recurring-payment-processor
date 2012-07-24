@@ -79,5 +79,61 @@ function get_pending_recurring_contributions()
     return $result;
 }
 
+/**
+ * eway_token_client
+ *
+ * Creates and eWay SOAP client to the eWay token API
+ *
+ * @param string $gateway_url URL of the gateway to connect to (could be the test or live gateway)
+ * @param string $eway_customer_id Your eWay customer ID
+ * @param string $username Your eWay business centre username
+ * @param string $password Your eWay business centre password
+ * @return object A SOAP client to the eWay token API
+ */
+function eway_token_client($gateway_url, $eway_customer_id, $username, $password)
+{
+    $soap_client = new SoapClient($gateway_url);
 
+    // Set up SOAP headers
+    $headers = array(
+        'eWAYCustomerID' => $eway_customer_id,
+        'Username'       => $username,
+        'Password'       => $password
+    );
+    $header = new SoapHeader('https://www.eway.com.au/gateway/managedpayment', 'eWAYHeader', $headers);
+    $soap_client->__setSoapHeaders($header);
 
+    return $soap_client;
+}
+
+/**
+ * process_eway_payment
+ *
+ * Processes an eWay token payment
+ *
+ * @param object $soap_client An eWay SOAP client set up and ready to go
+ * @param string $managed_customer_id The eWay token ID for the credit card you want to process
+ * @param string $amount_in_cents The amount in cents to charge the customer
+ * @param string $invoice_reference InvoiceReference to send to eWay
+ * @param string $invoice_description InvoiceDescription to send to eWay
+ * @return mixed eWay response object on or exception message
+ */
+function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
+{
+    $paymentinfo = array(
+        'managedCustomerID' => $managed_customer_id,
+        'amount' => $amount_in_cents,
+        'InvoiceReference' => $invoice_reference,
+        'InvoiceDescription' => $invoice_description
+    );
+
+    try{
+        $result = $soap_client->ProcessPayment($paymentinfo);
+    }catch(Exception $e){
+        return $e->getMessage();
+    }
+
+    $eway_response = $result->ewayResponse;
+
+    return $eway_response;
+}
