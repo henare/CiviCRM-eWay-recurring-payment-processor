@@ -116,7 +116,8 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
  * @param string $amount_in_cents The amount in cents to charge the customer
  * @param string $invoice_reference InvoiceReference to send to eWay
  * @param string $invoice_description InvoiceDescription to send to eWay
- * @return mixed eWay response object on or exception message
+ * @throws SoapFault exceptions
+ * @return object eWay response object
  */
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
@@ -127,12 +128,7 @@ function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cen
         'InvoiceDescription' => $invoice_description
     );
 
-    try{
-        $result = $soap_client->ProcessPayment($paymentinfo);
-    }catch(Exception $e){
-        return $e->getMessage();
-    }
-
+    $result = $soap_client->ProcessPayment($paymentinfo);
     $eway_response = $result->ewayResponse;
 
     return $eway_response;
