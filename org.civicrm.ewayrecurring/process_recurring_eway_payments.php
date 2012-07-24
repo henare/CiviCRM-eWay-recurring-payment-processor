@@ -32,7 +32,7 @@ define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 chdir(CIVICRM_DIRECTORY);
 require 'civicrm.config.php';
 require 'api/api.php';
-require 'CRM/Contribute/DAO/ContributionRecur.php';
+require 'CRM/Contribute/BAO/ContributionRecur.php';
 
 /**
  * get_pending_recurring_contributions
@@ -60,7 +60,7 @@ function get_pending_recurring_contributions()
         // Only process those with recurring contribution records
         if ($contribution['contribution_recur_id']) {
             // Find the recurring contribution record for this contribution
-            $recurring = new CRM_Contribute_DAO_ContributionRecur();
+            $recurring = new CRM_Contribute_BAO_ContributionRecur();
             $recurring->id = $contribution['contribution_recur_id'];
 
             // Only process records that have a recurring record with
