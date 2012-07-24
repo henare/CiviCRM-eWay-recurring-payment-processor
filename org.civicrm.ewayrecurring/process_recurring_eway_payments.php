@@ -23,7 +23,13 @@
  +--------------------------------------------------------------------+
 */
 
-chdir('/srv/www/localhost/wordpress/wp-content/plugins/civicrm/civicrm');
+// TODO: Remove hacky hardcoded constants
+// The full path to your CiviCRM directory
+define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civicrm/civicrm');
+// The ID for contributions in a pending status
+define('PENDING_CONTRIBUTION_STATUS_ID', 2);
+
+chdir(CIVICRM_DIRECTORY);
 require 'civicrm.config.php';
 require 'api/api.php';
 
