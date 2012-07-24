@@ -29,10 +29,14 @@ define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civ
 // The ID for contributions in a pending status
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 
+// Initialise CiviCRM
 chdir(CIVICRM_DIRECTORY);
 require 'civicrm.config.php';
-require 'api/api.php';
-require 'CRM/Contribute/BAO/ContributionRecur.php';
+require 'CRM/Core/Config.php';
+$config = CRM_Core_Config::singleton();
+
+require_once 'api/api.php';
+require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 
 /**
  * get_pending_recurring_contributions
