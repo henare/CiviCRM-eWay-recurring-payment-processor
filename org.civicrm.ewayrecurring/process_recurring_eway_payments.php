@@ -23,3 +23,16 @@
  +--------------------------------------------------------------------+
 */
 
+chdir('/srv/www/localhost/wordpress/wp-content/plugins/civicrm/civicrm');
+require 'civicrm.config.php';
+require 'api/api.php';
+
+// Get pending contributions
+$params = array(
+  'version' => 3,
+  // TODO: Statuses are customisable so this configuration should be read from the DB
+  'contribution_status_id' => 2
+);
+
+$pending_contributions = civicrm_api('contribution', 'get', $params);
+
