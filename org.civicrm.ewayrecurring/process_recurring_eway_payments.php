@@ -145,15 +145,20 @@ function get_scheduled_contributions()
     $scheduled_today->whereAdd("`is_test` != 1");
     $scheduled_today->find();
 
-    $contributions = array();
+    $scheduled_contributions = array();
 
     while ($scheduled_today->fetch()) {
-        // TODO: Check that there's no existing contribution record for today
-        // and that this is a live recurring record
-        $contributions[] = $scheduled_today;
+        // Check that there's no existing contribution record for today
+        $contribution = new CRM_Contribute_BAO_Contribution();
+        $contribution->contribution_recur_id = $scheduled_today->id;
+        $contribution->whereAdd("`receive_date` = '" . date('Y-m-d 00:00:00') . "'");
+
+        if ($contribution->find() == 0) {
+            $scheduled_contributions[] = $scheduled_today;
+        }
     }
 
-    return $contributions;
+    return $scheduled_contributions;
 }
 
 /**
