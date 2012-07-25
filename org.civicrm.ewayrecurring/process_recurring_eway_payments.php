@@ -110,18 +110,17 @@ foreach ($scheduled_contributions as $contribution) {
     }
 
     // Create contribution record
-    $params = array(
-        'version' => 3,
-        'contact_id' => $contribution->contact_id,
-        'receive_date' => date('Y-m-d 00:00:00'),
-        'total_amount' => $contribution->amount,
-        'contribution_recur_id' => $contribution->id,
-        'contribution_status_id' => 1 // TODO: Remove hardcoded hack
-    );
-    $contribution_record = civicrm_api('contribution', 'create', $params);
+    $new_contribution_record = new CRM_Contribute_BAO_Contribution();
+    $new_contribution_record->contact_id = $contribution->contact_id;
+    $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
+    $new_contribution_record->total_amount = $contribution->amount;
+    $new_contribution_record->contribution_recur_id = $contribution->id;
+    $new_contribution_record->contribution_status_id = 1; // TODO: Remove hardcoded hack
+    $new_contribution_record->contribution_type_id = $contribution->contribution_type_id;
+    $new_contribution_record->save();
 
     // Send receipt
-    send_receipt_email($contribution_record['id']);
+    send_receipt_email($new_contribution_record->id);
 
     $contribution->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     $contribution->save();
