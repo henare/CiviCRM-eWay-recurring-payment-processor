@@ -87,7 +87,7 @@ function get_pending_recurring_contributions()
 /**
  * eway_token_client
  *
- * Creates and eWay SOAP client to the eWay token API
+ * Creates an eWay SOAP client to the eWay token API
  *
  * @param string $gateway_url URL of the gateway to connect to (could be the test or live gateway)
  * @param string $eway_customer_id Your eWay customer ID
