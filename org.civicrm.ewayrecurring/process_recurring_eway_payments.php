@@ -290,7 +290,7 @@ function complete_contribution($contribution_id)
  */
 function send_receipt_email($contribution_id)
 {
-    echo "TODO: Send email for contribution ID: $contribution_id";
+    echo "TODO: Send email for contribution ID: $contribution_id\n";
 
     return false;
 }
