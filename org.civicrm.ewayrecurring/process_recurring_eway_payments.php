@@ -37,6 +37,7 @@ $config = CRM_Core_Config::singleton();
 
 require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
+require_once 'CRM/Contribute/BAO/Contribution.php';
 
 /**
  * get_pending_recurring_contributions
