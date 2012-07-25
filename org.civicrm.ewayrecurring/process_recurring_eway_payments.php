@@ -44,7 +44,6 @@ require_once 'CRM/Contribute/BAO/Contribution.php';
 require_once 'CRM/Core/BAO/PaymentProcessor.php';
 require_once 'CRM/Utils/Date.php';
 require_once 'CRM/Core/BAO/MessageTemplates.php';
-require_once 'CRM/Contact/BAO/Contact.php';
 require_once 'CRM/Contact/BAO/Contact/Location.php';
 require_once 'CRM/Core/BAO/Domain.php';
 
