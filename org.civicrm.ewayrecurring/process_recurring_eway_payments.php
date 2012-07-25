@@ -155,7 +155,7 @@ function complete_contribution($contribution_id)
     $contribution->id = $contribution_id;
     $contribution->find(true);
     $contribution->contribution_status_id = 2;
-    $contribution->receive_date = date('YmdHis');
+    $contribution->receive_date = date('Y-m-d H:i:s');
 
     return $contribution->save();
 }
