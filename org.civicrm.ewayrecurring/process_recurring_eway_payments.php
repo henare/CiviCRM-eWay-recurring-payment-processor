@@ -81,14 +81,16 @@ foreach ($pending_contributions as $pending_contribution) {
     }
     echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
 
-    // Send receipt
+    echo "Sending receipt\n";
     send_receipt_email($pending_contribution['contribution']['id']);
 
-    // Mark contribution as complete
+    echo "Marking contribution as complete\n";
     complete_contribution($pending_contribution['contribution']['id']);
 
+    echo "Updating recurring contribution\n";
     $pending_contribution['contribution_recur']->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     $pending_contribution['contribution_recur']->save();
+    echo "Finished processing contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
 }
 
 // Process today's scheduled contributions
@@ -97,6 +99,7 @@ $scheduled_contributions = get_scheduled_contributions();
 echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
 foreach ($scheduled_contributions as $contribution) {
     // Process payment
+    echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
     $amount_in_cents = str_replace('.', '', $contribution->amount);
     $result = process_eway_payment(
         $token_client,
@@ -113,8 +116,9 @@ foreach ($scheduled_contributions as $contribution) {
         // TODO: Mark transaction as failed
         continue;
     }
+    echo "Successfully processed payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
 
-    // Create contribution record
+    echo "Creating contribution record\n";
     $new_contribution_record = new CRM_Contribute_BAO_Contribution();
     $new_contribution_record->contact_id = $contribution->contact_id;
     $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
@@ -124,11 +128,13 @@ foreach ($scheduled_contributions as $contribution) {
     $new_contribution_record->contribution_type_id = $contribution->contribution_type_id;
     $new_contribution_record->save();
 
-    // Send receipt
+    echo "Sending receipt\n";
     send_receipt_email($new_contribution_record->id);
 
+    echo "Updating recurring contribution\n";
     $contribution->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     $contribution->save();
+    echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
 }
 
 /**
