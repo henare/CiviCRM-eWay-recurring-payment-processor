@@ -77,7 +77,7 @@ foreach ($pending_contributions as $pending_contribution) {
     echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
 
     // Send receipt
-    send_receipt_email($pending_contribution['contribution_recur']->id);
+    send_receipt_email($pending_contribution['contribution']['id']);
 
     // Mark contribution as complete
     complete_contribution($pending_contribution['contribution']['id']);
