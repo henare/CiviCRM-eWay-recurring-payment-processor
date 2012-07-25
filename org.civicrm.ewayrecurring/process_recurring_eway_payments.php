@@ -150,6 +150,7 @@ foreach ($scheduled_contributions as $contribution) {
 function get_pending_recurring_contributions()
 {
     // Get pending contributions
+    // TODO: Stop using the stupid API. For consistency we should use BAOs so we get objects back
     $params = array(
         'version' => 3,
         // TODO: Statuses are customisable so this configuration should be read from the DB
@@ -163,7 +164,6 @@ function get_pending_recurring_contributions()
         // Only process those with recurring contribution records
         if ($contribution['contribution_recur_id']) {
             // Find the recurring contribution record for this contribution
-            // TODO: Use the API when it has support for getting recurring contributions
             $recurring = new CRM_Contribute_BAO_ContributionRecur();
             $recurring->id = $contribution['contribution_recur_id'];
 
