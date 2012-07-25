@@ -274,7 +274,7 @@ function complete_contribution($contribution_id)
     $contribution = new CRM_Contribute_BAO_Contribution();
     $contribution->id = $contribution_id;
     $contribution->find(true);
-    $contribution->contribution_status_id = 2;
+    $contribution->contribution_status_id = 1;
     $contribution->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
 
     return $contribution->save();
