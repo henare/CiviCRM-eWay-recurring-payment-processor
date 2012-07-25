@@ -41,6 +41,7 @@ require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
 require_once 'CRM/Core/BAO/PaymentProcessor.php';
+require_once 'CRM/Utils/Date.php';
 
 // Get pending contributions
 $pending_contributions = get_pending_recurring_contributions();
@@ -81,7 +82,7 @@ foreach ($pending_contributions as $pending_contribution) {
     // Mark contribution as complete
     complete_contribution($pending_contribution['contribution']['id']);
 
-    $pending_contribution['contribution_recur']->next_sched_contribution = date('Y-m-d 00:00:00', strtotime("+1 month"));
+    $pending_contribution['contribution_recur']->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     $pending_contribution['contribution_recur']->save();
 }
 
@@ -122,7 +123,7 @@ foreach ($scheduled_contributions as $contribution) {
     // Send receipt
     send_receipt_email($contribution_record['id']);
 
-    //$contribution->next_sched_contribution = date('Y-m-d 00:00:00', strtotime("+1 month"));
+    $contribution->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     $contribution->save();
 }
 
@@ -275,7 +276,7 @@ function complete_contribution($contribution_id)
     $contribution->id = $contribution_id;
     $contribution->find(true);
     $contribution->contribution_status_id = 2;
-    $contribution->receive_date = date('Y-m-d H:i:s');
+    $contribution->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
 
     return $contribution->save();
 }
