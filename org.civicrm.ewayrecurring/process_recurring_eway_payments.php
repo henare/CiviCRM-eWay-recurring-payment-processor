@@ -54,8 +54,10 @@ $token_client = eway_token_client(
     $payment_processor['password']
 );
 
+echo "Processing " . count($pending_contributions) . " pending contributions\n";
 foreach ($pending_contributions as $pending_contribution) {
     // Process payment
+    echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
     $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']['total_amount']);
     $result = process_eway_payment(
         $token_client,
@@ -67,10 +69,11 @@ foreach ($pending_contributions as $pending_contribution) {
 
     // Bail if the transaction fails
     if ($result->ewayTrxnStatus != 'True') {
-        echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id;
-        echo 'eWay response: ' . $result->ewayTrxnError;
+        echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id . "\n";
+        echo 'eWay response: ' . $result->ewayTrxnError . "\n";
         continue;
     }
+    echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
 
     // Send receipt
     send_receipt_email($pending_contribution['contribution_recur']->id);
@@ -85,6 +88,7 @@ foreach ($pending_contributions as $pending_contribution) {
 // Process today's scheduled contributions
 $scheduled_contributions = get_scheduled_contributions();
 
+echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
 foreach ($scheduled_contributions as $contribution) {
     // Process payment
     $amount_in_cents = str_replace('.', '', $contribution->amount);
