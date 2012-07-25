@@ -138,3 +138,38 @@ function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cen
 
     return $eway_response;
 }
+
+/**
+ * complete_contribution
+ *
+ * Marks a contribution as complete
+ *
+ * @param string $contribution_id The ID of the contribution to mark as complete
+ * @return object The contribution object
+ */
+function complete_contribution($contribution_id)
+{
+    // Mark the contribution as complete
+    $contribution = new CRM_Contribute_BAO_Contribution();
+    $contribution->id = $contribution_id;
+    $contribution->find(true);
+    $contribution->contribution_status_id = 2;
+    $contribution->receive_date = date('YmdHis');
+
+    return $contribution->save();
+}
+
+/**
+ * send_receipt_email
+ *
+ * Sends a receipt for a contribution
+ *
+ * @param string $contribution_id The ID of the contribution to mark as complete
+ * @return bool Success or failure
+ */
+function send_receipt_email($contribution_id)
+{
+    echo "TODO: Send email for contribution ID: $contribution_id";
+
+    return false;
+}
