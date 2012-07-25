@@ -30,7 +30,6 @@ define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civ
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 // The ID of your CiviCRM eWay recurring payment processor
 define('PAYMENT_PROCESSOR_ID', 1);
-define('RECEIPT_FROM_EMAIL', 'mail@example.com');
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
@@ -47,6 +46,7 @@ require_once 'CRM/Utils/Date.php';
 require_once 'CRM/Core/BAO/MessageTemplates.php';
 require_once 'CRM/Contact/BAO/Contact.php';
 require_once 'CRM/Contact/BAO/Contact/Location.php';
+require_once 'CRM/Core/BAO/Domain.php';
 
 // Get pending contributions
 $pending_contributions = get_pending_recurring_contributions();
@@ -307,20 +307,24 @@ function send_receipt_email($contribution_id)
 
     list($name, $email) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contribution->contact_id);
 
+    $domainValues     = CRM_Core_BAO_Domain::getNameAndEmail();
+    $receiptFrom      = "$domainValues[0] <$domainValues[1]>";
+    $receiptFromEmail = $domainValues[1];
+
     $params = array(
         'groupName' => 'msg_tpl_workflow_contribution',
         'valueName' => 'contribution_online_receipt',
         'contactId' => $contribution->contact_id,
         'tplParams' => array(
             'contributeMode' => 'directIPN', // Tells the person to contact us for cancellations
-            'receiptFromEmail' => RECEIPT_FROM_EMAIL,
+            'receiptFromEmail' => $receiptFromEmail,
             'amount' => $contribution->total_amount,
             'title' => RECEIPT_SUBJECT_TITLE,
             'is_recur' => true,
             'billingName' => $name,
             'email' => $email
         ),
-        'from' => RECEIPT_FROM_EMAIL,
+        'from' => $receiptFrom,
         'toName' => $name,
         'toEmail' => $email,
         'isTest' => $contribution->is_test
