@@ -30,6 +30,8 @@ define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civ
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 // The ID of your CiviCRM eWay recurring payment processor
 define('PAYMENT_PROCESSOR_ID', 1);
+define('RECEIPT_FROM_EMAIL', 'mail@example.com');
+define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
 chdir(CIVICRM_DIRECTORY);
@@ -42,6 +44,9 @@ require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
 require_once 'CRM/Core/BAO/PaymentProcessor.php';
 require_once 'CRM/Utils/Date.php';
+require_once 'CRM/Core/BAO/MessageTemplates.php';
+require_once 'CRM/Contact/BAO/Contact.php';
+require_once 'CRM/Contact/BAO/Contact/Location.php';
 
 // Get pending contributions
 $pending_contributions = get_pending_recurring_contributions();
@@ -290,7 +295,32 @@ function complete_contribution($contribution_id)
  */
 function send_receipt_email($contribution_id)
 {
-    echo "TODO: Send email for contribution ID: $contribution_id\n";
+    $contribution = new CRM_Contribute_BAO_Contribution();
+    $contribution->id = $contribution_id;
+    $contribution->find(true);
 
-    return false;
+    list($name, $email) = CRM_Contact_BAO_Contact_Location::getEmailDetails($contribution->contact_id);
+
+    $params = array(
+        'groupName' => 'msg_tpl_workflow_contribution',
+        'valueName' => 'contribution_online_receipt',
+        'contactId' => $contribution->contact_id,
+        'tplParams' => array(
+            'contributeMode' => 'directIPN', // Tells the person to contact us for cancellations
+            'receiptFromEmail' => RECEIPT_FROM_EMAIL,
+            'amount' => $contribution->total_amount,
+            'title' => RECEIPT_SUBJECT_TITLE,
+            'is_recur' => true,
+            'billingName' => $name,
+            'email' => $email
+        ),
+        'from' => RECEIPT_FROM_EMAIL,
+        'toName' => $name,
+        'toEmail' => $email,
+        'isTest' => $contribution->is_test
+    );
+
+    list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplates::sendTemplate($params);
+
+    return $sent;
 }
