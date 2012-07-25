@@ -78,8 +78,7 @@ foreach ($pending_contributions as $pending_contribution) {
     // Mark contribution as complete
     complete_contribution($pending_contribution['contribution']['id']);
 
-    // Update recurring contribution
-    $pending_contribution['contribution_recur']->next_sched_contribution = date('Y-m-d H:i:s', strtotime("+1 month"));
+    $pending_contribution['contribution_recur']->next_sched_contribution = date('Y-m-d 00:00:00', strtotime("+1 month"));
     $pending_contribution['contribution_recur']->save();
 }
 
