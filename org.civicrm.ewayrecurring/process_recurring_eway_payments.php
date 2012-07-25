@@ -82,6 +82,46 @@ foreach ($pending_contributions as $pending_contribution) {
     $pending_contribution['contribution_recur']->save();
 }
 
+// Process today's scheduled contributions
+$scheduled_contributions = get_scheduled_contributions();
+
+foreach ($scheduled_contributions as $contribution) {
+    // Process payment
+    $amount_in_cents = str_replace('.', '', $contribution->amount);
+    $result = process_eway_payment(
+        $token_client,
+        $contribution->processor_id,
+        $amount_in_cents,
+        $contribution->invoice_id,
+        ''
+    );
+
+    // Bail if the transaction fails
+    if ($result->ewayTrxnStatus != 'True') {
+        echo 'ERROR: Failed to process transaction for managed customer: ' . $contribution->processor_id;
+        echo 'eWay response: ' . $result->ewayTrxnError;
+        // TODO: Mark transaction as failed
+        continue;
+    }
+
+    // Create contribution record
+    $params = array(
+        'version' => 3,
+        'contact_id' => $contribution->contact_id,
+        'receive_date' => date('Y-m-d 00:00:00'),
+        'total_amount' => $contribution->amount,
+        'contribution_recur_id' => $contribution->id,
+        'contribution_status_id' => 1 // TODO: Remove hardcoded hack
+    );
+    $contribution_record = civicrm_api('contribution', 'create', $params);
+
+    // Send receipt
+    send_receipt_email($contribution_record['id']);
+
+    //$contribution->next_sched_contribution = date('Y-m-d 00:00:00', strtotime("+1 month"));
+    $contribution->save();
+}
+
 /**
  * get_pending_recurring_contributions
  *
