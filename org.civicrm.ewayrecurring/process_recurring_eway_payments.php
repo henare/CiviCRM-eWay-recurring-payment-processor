@@ -129,6 +129,34 @@ function get_pending_recurring_contributions()
 }
 
 /**
+ * get_scheduled_contributions
+ *
+ * Gets recurring contributions that are scheduled to be processed today
+ *
+ * @return array An array of contribtion_recur objects
+ */
+function get_scheduled_contributions()
+{
+    $scheduled_today = new CRM_Contribute_BAO_ContributionRecur();
+    $scheduled_today->whereAdd("`next_sched_contribution` = '" . date('Y-m-d 00:00:00') . "'");
+    // Don't get cancelled contributions
+    $scheduled_today->whereAdd("`contribution_status_id` != 3");
+    // Or test transactions
+    $scheduled_today->whereAdd("`is_test` != 1");
+    $scheduled_today->find();
+
+    $contributions = array();
+
+    while ($scheduled_today->fetch()) {
+        // TODO: Check that there's no existing contribution record for today
+        // and that this is a live recurring record
+        $contributions[] = $scheduled_today;
+    }
+
+    return $contributions;
+}
+
+/**
  * eway_token_client
  *
  * Creates an eWay SOAP client to the eWay token API
