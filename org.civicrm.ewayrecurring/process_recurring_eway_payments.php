@@ -28,6 +28,8 @@
 define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civicrm/civicrm');
 // The ID for contributions in a pending status
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
+// The ID of your CiviCRM eWay recurring payment processor
+define('PAYMENT_PROCESSOR_ID', 1);
 
 // Initialise CiviCRM
 chdir(CIVICRM_DIRECTORY);
@@ -38,6 +40,48 @@ $config = CRM_Core_Config::singleton();
 require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
+require_once 'CRM/Core/BAO/PaymentProcessor.php';
+
+// Get pending contributions
+$pending_contributions = get_pending_recurring_contributions();
+
+// Create eWay token client
+$payment_processor = CRM_Core_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
+$token_client = eway_token_client(
+    $payment_processor['url_recur'],
+    $payment_processor['subject'],
+    $payment_processor['user_name'],
+    $payment_processor['password']
+);
+
+foreach ($pending_contributions as $pending_contribution) {
+    // Process payment
+    $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']['total_amount']);
+    $result = process_eway_payment(
+        $token_client,
+        $pending_contribution['contribution_recur']->processor_id,
+        $amount_in_cents,
+        $pending_contribution['contribution']['invoice_id'],
+        $pending_contribution['contribution']['contribution_source']
+    );
+
+    // Bail if the transaction fails
+    if ($result->ewayTrxnStatus != 'True') {
+        echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id;
+        echo 'eWay response: ' . $result->ewayTrxnError;
+        continue;
+    }
+
+    // Send receipt
+    send_receipt_email($pending_contribution['contribution_recur']->id);
+
+    // Mark contribution as complete
+    complete_contribution($pending_contribution['contribution']['id']);
+
+    // Update recurring contribution
+    $pending_contribution['contribution_recur']->next_sched_contribution = date('Y-m-d H:i:s', strtotime("+1 month"));
+    $pending_contribution['contribution_recur']->save();
+}
 
 /**
  * get_pending_recurring_contributions
