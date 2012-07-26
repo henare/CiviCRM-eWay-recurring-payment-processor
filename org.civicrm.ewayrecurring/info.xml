@@ -20,16 +20,16 @@
   <compatibility><ver>3.3</ver></compatibility>
   <comments></comments>
   <typeInfo>
-   <userNameLabel>Customer ID</userNameLabel>
-   <passwordLabel></passwordLabel>
+   <userNameLabel>Username</userNameLabel>
+   <passwordLabel>Password</passwordLabel>
    <signatureLabel></signatureLabel>
-   <subjectLabel></subjectLabel>
+   <subjectLabel>Customer ID</subjectLabel>
    <urlSiteDefault>https://www.eway.com.au/gateway_cvn/xmlpayment.asp</urlSiteDefault>
    <urlApiDefault></urlApiDefault>
-   <urlRecurDefault>https://www.eway.com.au/gateway/rebill/upload.aspx</urlRecurDefault>
+   <urlRecurDefault>https://www.eway.com.au/gateway/ManagedPaymentService/managedCreditCardPayment.asmx?WSDL</urlRecurDefault>
    <urlSiteTestDefault>https://www.eway.com.au/gateway_cvn/xmltest/testpage.asp</urlSiteTestDefault>
    <urlApiTestDefault></urlApiTestDefault>
-   <urlRecurTestDefault>https://www.eway.com.au/gateway/rebill/test/Upload_test.aspx</urlRecurTestDefault>
+   <urlRecurTestDefault>https://www.eway.com.au/gateway/ManagedPaymentService/test/managedcreditcardpayment.asmx?WSDL</urlRecurTestDefault>
    <urlButtonDefault></urlButtonDefault>
    <urlButtonTestDefault></urlButtonTestDefault>
    <billingMode>form</billingMode>
