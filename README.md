@@ -4,7 +4,9 @@ CiviCRM eWay Token Recurring Payment Processor Extension
 Installing
 ----------
 
-Copy the `org.civicrm.ewayrecurring` directory to your CiviCRM extension directory and install it from the _Manage Extensions_ administration page in CiviCRM.
+* Copy the `org.civicrm.ewayrecurring` directory to your CiviCRM extension directory (which is located in a configurable location, see Administer > System Settings > Directories)
+* Install the extension from the Administer > System Settings > Manage Extensions administration page in CiviCRM
+* Now [set up a payment processor](http://wiki.civicrm.org/confluence/display/CRMDOC/Payment+Processors#PaymentProcessors-SetupandConfiguration) and contribution page like you would normally
 
 Additional set up
 -----------------
