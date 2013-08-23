@@ -76,7 +76,7 @@ foreach ($pending_contributions as $pending_contribution) {
         $pending_contribution['contribution_recur']->processor_id,
         $amount_in_cents,
         $pending_contribution['contribution']->invoice_id,
-        $pending_contribution['contribution']->contribution_source
+        $pending_contribution['contribution']->source
     );
 
     // Bail if the transaction fails
