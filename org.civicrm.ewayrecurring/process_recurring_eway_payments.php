@@ -160,7 +160,7 @@ function get_pending_recurring_contributions()
     $pending_contributions->whereAdd("`contribution_status_id` = " . PENDING_CONTRIBUTION_STATUS_ID);
     $pending_contributions->find();
 
-    $result = Array();
+    $result = array();
 
     while ($pending_contributions->fetch()) {
         // Only process those with recurring contribution records
