@@ -62,14 +62,14 @@ $token_client = eway_token_client(
 echo "Processing " . count($pending_contributions) . " pending contributions\n";
 foreach ($pending_contributions as $pending_contribution) {
     // Process payment
-    echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
-    $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']['total_amount']);
+    echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
+    $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
     $result = process_eway_payment(
         $token_client,
         $pending_contribution['contribution_recur']->processor_id,
         $amount_in_cents,
-        $pending_contribution['contribution']['invoice_id'],
-        $pending_contribution['contribution']['contribution_source']
+        $pending_contribution['contribution']->invoice_id,
+        $pending_contribution['contribution']->contribution_source
     );
 
     // Bail if the transaction fails
@@ -78,18 +78,18 @@ foreach ($pending_contributions as $pending_contribution) {
         echo 'eWay response: ' . $result->ewayTrxnError . "\n";
         continue;
     }
-    echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
+    echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
 
     echo "Sending receipt\n";
-    send_receipt_email($pending_contribution['contribution']['id']);
+    send_receipt_email($pending_contribution['contribution']->id);
 
     echo "Marking contribution as complete\n";
-    complete_contribution($pending_contribution['contribution']['id']);
+    complete_contribution($pending_contribution['contribution']->id);
 
     echo "Updating recurring contribution\n";
     $pending_contribution['contribution_recur']->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     $pending_contribution['contribution_recur']->save();
-    echo "Finished processing contribution ID: " . $pending_contribution['contribution']['id'] . "\n";
+    echo "Finished processing contribution ID: " . $pending_contribution['contribution']->id . "\n";
 }
 
 // Process today's scheduled contributions
@@ -144,36 +144,27 @@ foreach ($scheduled_contributions as $contribution) {
  * generally be processed the same day they're created. These do not
  * include the regularly processed recurring transactions.
  *
- * @return array An array of associative arrays containing contribution arrays & contribtion_recur objects
+ * @return array An array of associative arrays containing contribution & contribtion_recur objects
  */
 function get_pending_recurring_contributions()
 {
     // Get pending contributions
-    // TODO: Stop using the stupid API. For consistency we should use BAOs so we get objects back
-    $params = array(
-        'version' => 3,
-        // TODO: Statuses are customisable so this configuration should be read from the DB
-        'contribution_status_id' => PENDING_CONTRIBUTION_STATUS_ID
-    );
-    $pending_contributions = civicrm_api('contribution', 'get', $params);
+    $pending_contributions = new CRM_Contribute_BAO_Contribution();
+    $pending_contributions->whereAdd("`contribution_status_id` = " . PENDING_CONTRIBUTION_STATUS_ID);
+    $pending_contributions->find();
 
-    $result = array();
-
-    foreach ($pending_contributions['values'] as $contribution) {
+    while ($pending_contributions->fetch()) {
         // Only process those with recurring contribution records
-        if ($contribution['contribution_recur_id']) {
+        if ($pending_contributions->contribution_recur_id) {
             // Find the recurring contribution record for this contribution
             $recurring = new CRM_Contribute_BAO_ContributionRecur();
-            $recurring->id = $contribution['contribution_recur_id'];
+            $recurring->id = $pending_contributions->contribution_recur_id;
 
             // Only process records that have a recurring record with
             // a processor ID, i.e. an eWay token
             if ($recurring->find(true) && $recurring->processor_id) {
-                // TODO: Return the same type of results
-                // This is a bit nasty, contribution is an array and
-                // contribution_recur is an object
                 $result[] = array(
-                    'contribution' => $contribution,
+                    'contribution' => $pending_contributions,
                     'contribution_recur' => $recurring
                 );
             }
