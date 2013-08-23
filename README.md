@@ -13,7 +13,7 @@ Additional set up
 
 The `process_recurring_eway_payments.php` file is intended to be run daily from the command line. It processes pending transactions and recurring transactions that are due to be processed.
 
-It is not ready to run out of the box and needs further customisation (see TODOs).
+It is not ready to run out of the box and needs further customisation (see issue #3).
 
 Background
 ----------
@@ -39,12 +39,3 @@ That's up to you, both need a bit more work to set up.
 The Recurring API version has a bunch of hardcoded values that you need to set and a mailbox to set up to process receipts.
 
 The Token API version's cron script does not process generic recurring payments (it assumes monthly recurring) currently and it also has a few hardcoded values that need setting.
-
-To Do
------
-
-This is for the token API version:
-
-* Remove hardcoded hacks
-* Make cron script process any recurring transaction (it assumes monthly at the moment)
-* Get the cron script to run via CiviCRM's built in cron and be installed as part of the extension installation process
