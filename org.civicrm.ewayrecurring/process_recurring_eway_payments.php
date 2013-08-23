@@ -50,13 +50,20 @@ require_once 'CRM/Core/BAO/Domain.php';
 // Get pending contributions
 $pending_contributions = get_pending_recurring_contributions();
 
-// Create eWay token client
-$payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
-$token_client = eway_token_client(
-    $payment_processor['url_recur'],
-    $payment_processor['subject'],
-    $payment_processor['user_name'],
-    $payment_processor['password']
+// Create eWay token clients
+$live_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
+$live_token_client = eway_token_client(
+    $live_payment_processor['url_recur'],
+    $live_payment_processor['subject'],
+    $live_payment_processor['user_name'],
+    $live_payment_processor['password']
+);
+$test_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'test');
+$test_token_client = eway_token_client(
+    $test_payment_processor['url_recur'],
+    $test_payment_processor['subject'],
+    $test_payment_processor['user_name'],
+    $test_payment_processor['password']
 );
 
 echo "Processing " . count($pending_contributions) . " pending contributions\n";
@@ -65,7 +72,7 @@ foreach ($pending_contributions as $pending_contribution) {
     echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
     $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
     $result = process_eway_payment(
-        $token_client,
+        ($pending_contribution['contribution']->is_test ? $test_token_client : $live_token_client),
         $pending_contribution['contribution_recur']->processor_id,
         $amount_in_cents,
         $pending_contribution['contribution']->invoice_id,
