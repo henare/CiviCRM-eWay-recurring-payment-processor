@@ -41,7 +41,7 @@ $config = CRM_Core_Config::singleton();
 require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
-require_once 'CRM/Core/BAO/PaymentProcessor.php';
+require_once 'CRM/Financial/BAO/PaymentProcessor.php';
 require_once 'CRM/Utils/Date.php';
 require_once 'CRM/Core/BAO/MessageTemplates.php';
 require_once 'CRM/Contact/BAO/Contact/Location.php';
@@ -51,7 +51,7 @@ require_once 'CRM/Core/BAO/Domain.php';
 $pending_contributions = get_pending_recurring_contributions();
 
 // Create eWay token client
-$payment_processor = CRM_Core_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
+$payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
 $token_client = eway_token_client(
     $payment_processor['url_recur'],
     $payment_processor['subject'],
