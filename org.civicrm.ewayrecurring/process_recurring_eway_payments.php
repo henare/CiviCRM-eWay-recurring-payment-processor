@@ -131,7 +131,7 @@ foreach ($scheduled_contributions as $contribution) {
     $new_contribution_record->total_amount = $contribution->amount;
     $new_contribution_record->contribution_recur_id = $contribution->id;
     $new_contribution_record->contribution_status_id = 1; // TODO: Remove hardcoded hack
-    $new_contribution_record->contribution_type_id = $contribution->contribution_type_id;
+    $new_contribution_record->financial_type_id = $contribution->financial_type_id;
     $new_contribution_record->save();
 
     echo "Sending receipt\n";
