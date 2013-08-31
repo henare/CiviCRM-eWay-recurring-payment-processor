@@ -151,7 +151,7 @@ foreach ($scheduled_contributions as $contribution) {
  * generally be processed the same day they're created. These do not
  * include the regularly processed recurring transactions.
  *
- * @return array An array of associative arrays containing contribution & contribtion_recur objects
+ * @return array An array of associative arrays containing contribution & contribution_recur objects
  */
 function get_pending_recurring_contributions()
 {
@@ -187,7 +187,7 @@ function get_pending_recurring_contributions()
  *
  * Gets recurring contributions that are scheduled to be processed today
  *
- * @return array An array of contribtion_recur objects
+ * @return array An array of contribution_recur objects
  */
 function get_scheduled_contributions()
 {
