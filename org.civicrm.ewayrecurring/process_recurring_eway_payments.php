@@ -108,7 +108,7 @@ foreach ($scheduled_contributions as $contribution) {
     echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
     $amount_in_cents = str_replace('.', '', $contribution->amount);
     $result = process_eway_payment(
-        $token_client,
+        ($contribution->is_test ? $test_token_client : $live_token_client),
         $contribution->processor_id,
         $amount_in_cents,
         $contribution->invoice_id,
@@ -195,8 +195,6 @@ function get_scheduled_contributions()
     $scheduled_today->whereAdd("`next_sched_contribution` = '" . date('Y-m-d 00:00:00') . "'");
     // Don't get cancelled contributions
     $scheduled_today->whereAdd("`contribution_status_id` != 3");
-    // Or test transactions
-    $scheduled_today->whereAdd("`is_test` != 1");
     $scheduled_today->find();
 
     $scheduled_contributions = array();
