@@ -192,7 +192,7 @@ function get_pending_recurring_contributions()
 function get_scheduled_contributions()
 {
     $scheduled_today = new CRM_Contribute_BAO_ContributionRecur();
-    $scheduled_today->whereAdd("`next_sched_contribution` = '" . date('Y-m-d 00:00:00') . "'");
+    $scheduled_today->whereAdd("`next_sched_contribution` <= '" . date('Y-m-d 00:00:00') . "'");
     // Don't get cancelled contributions
     $scheduled_today->whereAdd("`contribution_status_id` != 3");
     $scheduled_today->find();
