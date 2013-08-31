@@ -14,10 +14,10 @@
     <author>Melbourne CiviCRM</author>
     <email>noreply@civicrm.org</email>
   </maintainer>
-  <releaseDate>2012-04-23</releaseDate>
-  <version>0.0.5</version>
+  <releaseDate>2013-08-31</releaseDate>
+  <version>0.0.6</version>
   <develStage>beta</develStage>
-  <compatibility><ver>3.3</ver></compatibility>
+  <compatibility><ver>4.3</ver></compatibility>
   <comments></comments>
   <typeInfo>
    <userNameLabel>Username</userNameLabel>
