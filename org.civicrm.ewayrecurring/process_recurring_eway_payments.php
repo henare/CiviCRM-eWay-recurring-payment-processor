@@ -206,7 +206,7 @@ function get_scheduled_contributions()
         $contribution->whereAdd("`receive_date` = '" . date('Y-m-d 00:00:00') . "'");
 
         if ($contribution->find() == 0) {
-            $scheduled_contributions[] = $scheduled_today;
+            $scheduled_contributions[] = clone($scheduled_today);
         }else{
             echo "WARNING: Attempted to reprocess recurring contribution ID " . $scheduled_today->id .  ". Skipping and updating recurring contribution\n";
             $scheduled_today->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
