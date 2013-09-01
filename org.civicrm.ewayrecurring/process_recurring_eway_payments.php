@@ -173,8 +173,8 @@ function get_pending_recurring_contributions()
             // a processor ID, i.e. an eWay token
             if ($recurring->find(true) && $recurring->processor_id) {
                 $result[] = array(
-                    'contribution' => $pending_contributions,
-                    'contribution_recur' => $recurring
+                    'contribution' => clone($pending_contributions),
+                    'contribution_recur' => clone($recurring)
                 );
             }
         }
