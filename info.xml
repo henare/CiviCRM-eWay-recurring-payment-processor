@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<extension key="org.civicrm.ewayrecurring" type="payment">
-  <file>eWAYRecurring</file>
-  <name>eWay_Recurring</name>
+<?xml version="1.0"?>
+<extension key="com.chrischinchilla.ewayrecurring" type="payment">
+  <file>ewayrecurring</file>
+  <name>eWay Recurring</name>
   <description>Recurring payments payment processor for eWay</description>
   <urls>
     <url desc="Main Extension Page">http://civicrm.org</url>
@@ -17,8 +17,11 @@
   <releaseDate>2013-08-31</releaseDate>
   <version>0.0.6</version>
   <develStage>beta</develStage>
-  <compatibility><ver>4.3</ver></compatibility>
+  <compatibility><ver>4.2</ver></compatibility>
   <comments></comments>
+    <civix>
+    <namespace>CRM/Ewayrecurring</namespace>
+  </civix>
   <typeInfo>
    <userNameLabel>Username</userNameLabel>
    <passwordLabel>Password</passwordLabel>

@@ -25,19 +25,19 @@
 
 // TODO: Remove hacky hardcoded constants
 // The full path to your CiviCRM directory
-define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civicrm/civicrm');
+define('CIVICRM_DIRECTORY', '/Library/WebServer/Documents/civisandbox/sites/default');
 // The ID for contributions in a pending status
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 // The ID of your CiviCRM eWay recurring payment processor
-define('PAYMENT_PROCESSOR_ID', 1);
+define('PAYMENT_PROCESSOR_ID', 9);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
 chdir(CIVICRM_DIRECTORY);
-require 'civicrm.config.php';
+require 'civicrm.settings.php';
 require 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
-
+print_r($config);
 require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
@@ -46,8 +46,11 @@ require_once 'CRM/Utils/Date.php';
 require_once 'CRM/Core/BAO/MessageTemplates.php';
 require_once 'CRM/Contact/BAO/Contact/Location.php';
 require_once 'CRM/Core/BAO/Domain.php';
+require_once 'nusoap.php';
+
 
 // Create eWay token clients
+
 $live_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
 $live_token_client = eway_token_client(
     $live_payment_processor['url_recur'],
@@ -55,6 +58,7 @@ $live_token_client = eway_token_client(
     $live_payment_processor['user_name'],
     $live_payment_processor['password']
 );
+
 $test_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'test');
 $test_token_client = eway_token_client(
     $test_payment_processor['url_recur'],
@@ -73,16 +77,16 @@ foreach ($pending_contributions as $pending_contribution) {
     $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
     $result = process_eway_payment(
         ($pending_contribution['contribution']->is_test ? $test_token_client : $live_token_client),
-        $pending_contribution['contribution_recur']->processor_id,
+        $pending_contribution['contribution_recur']->is_test ? '9876543211000' : $pending_contribution['contribution_recur']->processor_id,
         $amount_in_cents,
         $pending_contribution['contribution']->invoice_id,
         $pending_contribution['contribution']->source
     );
 
     // Bail if the transaction fails
-    if ($result->ewayTrxnStatus != 'True') {
+    if ($result['ewayTrxnStatus'] != 'True') {
         echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id . "\n";
-        echo 'eWay response: ' . $result->ewayTrxnError . "\n";
+        echo 'eWay response: ' . $result['ewayTrxnError'] . "\n";
         continue;
     }
     echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
@@ -163,6 +167,7 @@ function get_pending_recurring_contributions()
     $result = array();
 
     while ($pending_contributions->fetch()) {
+
         // Only process those with recurring contribution records
         if ($pending_contributions->contribution_recur_id) {
             // Find the recurring contribution record for this contribution
@@ -230,7 +235,9 @@ function get_scheduled_contributions()
  */
 function eway_token_client($gateway_url, $eway_customer_id, $username, $password)
 {
-    $soap_client = new SoapClient($gateway_url);
+    var_dump($gateway_url);
+    //$soap_client = new SoapClient($gateway_url);
+        $soap_client = new nusoap_client($gateway_url, false);
 
     // Set up SOAP headers
     $headers = array(
@@ -238,8 +245,11 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
         'Username'       => $username,
         'Password'       => $password
     );
-    $header = new SoapHeader('https://www.eway.com.au/gateway/managedpayment', 'eWAYHeader', $headers);
-    $soap_client->__setSoapHeaders($header);
+
+    $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
+    // set SOAP header
+    $headers = "<man:eWAYHeader><man:eWAYCustomerID>" . $headers['eWAYCustomerID'] . "</man:eWAYCustomerID><man:Username>" . $headers['Username'] . "</man:Username><man:Password>" . $headers['Password'] . "</man:Password></man:eWAYHeader>";
+    $soap_client->setHeaders($headers);
 
     return $soap_client;
 }
@@ -260,16 +270,16 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
     $paymentinfo = array(
-        'managedCustomerID' => $managed_customer_id,
-        'amount' => $amount_in_cents,
-        'InvoiceReference' => $invoice_reference,
-        'InvoiceDescription' => $invoice_description
+        'man:managedCustomerID' => $managed_customer_id,
+        'man:amount' => $amount_in_cents,
+        'man:InvoiceReference' => $invoice_reference,
+        'man:InvoiceDescription' => $invoice_description
     );
+    $soapaction = 'https://www.eway.com.au/gateway/managedpayment/ProcessPayment';
 
-    $result = $soap_client->ProcessPayment($paymentinfo);
-    $eway_response = $result->ewayResponse;
+    $result = $soap_client->call('man:ProcessPayment', $paymentinfo, '', $soapaction);
 
-    return $eway_response;
+    return $result;
 }
 
 /**
