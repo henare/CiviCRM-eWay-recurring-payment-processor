@@ -133,14 +133,16 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
 
             $soap_client->__setSoapHeaders($header);
 */
+$soap_client = new nusoap_client($this->_paymentProcessor['url_recur'], false);
 
-            $soap_client = new nusoap_client("https://www.ewaygateway.com/gateway/ManagedPaymentService/test/managedCreditCardPayment.asmx", false);
+//            $soap_client = new nusoap_client("https://www.ewaygateway.com/gateway/ManagedPaymentService/test/managedCreditCardPayment.asmx", false);
 $err = $soap_client->getError();
 if ($err) {
     echo '<h2>Constructor error</h2><pre>' . $err . '</pre>';
     echo '<h2>Debug</h2><pre>' . htmlspecialchars($soap_client->getDebug(), ENT_QUOTES) . '</pre>';
     exit();
 }
+
 
 // set namespace
 $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
@@ -183,15 +185,15 @@ $soap_client->setHeaders($headers);
             try{
 
     $soapaction = 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer';
+
     $result = $soap_client->call('man:CreateCustomer', $requestbody, '', $soapaction);
 
             }catch(Exception $e){
-                return self::errorExit(9010, $e->getMessage());
+                return self::errorExit(9010, $result['faultstring']);
             }
 
 
             // We've created the customer successfully
-
 
             $managed_customer_id = $result;
 
@@ -412,7 +414,6 @@ $soap_client->setHeaders($headers);
             $params['gross_amount']     = $eWAYResponse->Amount();
             $params['trxn_id']          = $eWAYResponse->TransactionNumber();
         }
-               echo "<pre>";print_r($params);die;
 
         return $params;
     } // end function doDirectPayment
