@@ -51,7 +51,7 @@ function civicrm_api3_eway_process($params) {
     //$config = CRM_Core_Config::singleton(); // Needed?
 
 // Any of the below needed?
-//
+// Seemingly so?
 /*
     require_once 'CRM/Contribute/BAO/ContributionRecur.php';
     require_once 'CRM/Contribute/BAO/Contribution.php';
@@ -60,13 +60,12 @@ function civicrm_api3_eway_process($params) {
     require_once 'CRM/Core/BAO/MessageTemplates.php';
     require_once 'CRM/Contact/BAO/Contact/Location.php';
     require_once 'CRM/Core/BAO/Domain.php';
-*/
+    */
+
     require_once 'nusoap.php';
 
-
     // Create eWay token clients
-
-    $live_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
+    $live_payment_processor = CRM_Core_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
     $live_token_client = eway_token_client(
         $live_payment_processor['url_recur'],
         $live_payment_processor['subject'],
@@ -74,7 +73,7 @@ function civicrm_api3_eway_process($params) {
         $live_payment_processor['password']
     );
 
-    $test_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'test');
+    $test_payment_processor = CRM_Core_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'test');
     $test_token_client = eway_token_client(
         $test_payment_processor['url_recur'],
         $test_payment_processor['subject'],
