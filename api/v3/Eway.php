@@ -48,9 +48,11 @@ function civicrm_api3_eway_process($params) {
 //    chdir(CIVICRM_DIRECTORY);
   //  require 'civicrm.settings.php';
     //require 'CRM/Core/Config.php';
-    $config = CRM_Core_Config::singleton(); // Needed?
+    //$config = CRM_Core_Config::singleton(); // Needed?
 
 // Any of the below needed?
+//
+/*
     require_once 'CRM/Contribute/BAO/ContributionRecur.php';
     require_once 'CRM/Contribute/BAO/Contribution.php';
     require_once 'CRM/Financial/BAO/PaymentProcessor.php';
@@ -58,7 +60,7 @@ function civicrm_api3_eway_process($params) {
     require_once 'CRM/Core/BAO/MessageTemplates.php';
     require_once 'CRM/Contact/BAO/Contact/Location.php';
     require_once 'CRM/Core/BAO/Domain.php';
-
+*/
     require_once 'nusoap.php';
 
 
