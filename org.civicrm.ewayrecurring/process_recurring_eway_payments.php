@@ -25,11 +25,13 @@
 
 // TODO: Remove hacky hardcoded constants
 // The full path to your CiviCRM directory
-define('CIVICRM_DIRECTORY', '/srv/www/localhost/wordpress/wp-content/plugins/civicrm/civicrm');
-// The ID for contributions in a pending status
+define('CIVICRM_DIRECTORY', '/var/www/citybibleforum/sites/all/modules/civicrm');
+// The status values for contributions in various states
+define('COMPLETE_CONTRIBUTION_STATUS_ID', 1);
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
+define('CANCELLED_CONTRIBUTION_STATUS_ID', 3);
 // The ID of your CiviCRM eWay recurring payment processor
-define('PAYMENT_PROCESSOR_ID', 1);
+define('PAYMENT_PROCESSOR_ID', 3);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
@@ -43,7 +45,7 @@ require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
 require_once 'CRM/Financial/BAO/PaymentProcessor.php';
 require_once 'CRM/Utils/Date.php';
-require_once 'CRM/Core/BAO/MessageTemplates.php';
+require_once 'CRM/Core/BAO/MessageTemplate.php';
 require_once 'CRM/Contact/BAO/Contact/Location.php';
 require_once 'CRM/Core/BAO/Domain.php';
 
@@ -91,11 +93,11 @@ foreach ($pending_contributions as $pending_contribution) {
     send_receipt_email($pending_contribution['contribution']->id);
 
     echo "Marking contribution as complete\n";
-    complete_contribution($pending_contribution['contribution']->id);
+    $pending_contribution['contribution']->trxn_id = $result->ewayTrxnNumber;
+    complete_contribution($pending_contribution['contribution']);
 
     echo "Updating recurring contribution\n";
-    $pending_contribution['contribution_recur']->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
-    $pending_contribution['contribution_recur']->save();
+    update_recurring_contribution($pending_contribution['contribution_recur']);
     echo "Finished processing contribution ID: " . $pending_contribution['contribution']->id . "\n";
 }
 
@@ -129,8 +131,9 @@ foreach ($scheduled_contributions as $contribution) {
     $new_contribution_record->contact_id = $contribution->contact_id;
     $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
     $new_contribution_record->total_amount = $contribution->amount;
+    $new_contribution_record->trxn_id = $result->ewayTrxnNumber;
     $new_contribution_record->contribution_recur_id = $contribution->id;
-    $new_contribution_record->contribution_status_id = 1; // TODO: Remove hardcoded hack
+    $new_contribution_record->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID; // TODO: Remove hardcoded hack
     $new_contribution_record->financial_type_id = $contribution->financial_type_id;
     $new_contribution_record->save();
 
@@ -138,8 +141,7 @@ foreach ($scheduled_contributions as $contribution) {
     send_receipt_email($new_contribution_record->id);
 
     echo "Updating recurring contribution\n";
-    $contribution->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
-    $contribution->save();
+    update_recurring_contribution($contribution);
     echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
 }
 
@@ -192,9 +194,9 @@ function get_pending_recurring_contributions()
 function get_scheduled_contributions()
 {
     $scheduled_today = new CRM_Contribute_BAO_ContributionRecur();
-    $scheduled_today->whereAdd("`next_sched_contribution` <= '" . date('Y-m-d 00:00:00') . "'");
+    $scheduled_today->whereAdd("`next_sched_contribution_date` <= '" . date('Y-m-d 00:00:00') . "'");
     // Don't get cancelled contributions
-    $scheduled_today->whereAdd("`contribution_status_id` != 3");
+    $scheduled_today->whereAdd("`contribution_status_id` != " . CANCELLED_CONTRIBUTION_STATUS_ID);
     $scheduled_today->find();
 
     $scheduled_contributions = array();
@@ -209,8 +211,7 @@ function get_scheduled_contributions()
             $scheduled_contributions[] = clone($scheduled_today);
         }else{
             echo "WARNING: Attempted to reprocess recurring contribution ID " . $scheduled_today->id .  ". Skipping and updating recurring contribution\n";
-            $scheduled_today->next_sched_contribution = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
-            $scheduled_today->update();
+            update_recurring_contribution($scheduled_today);
         }
     }
 
@@ -277,19 +278,54 @@ function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cen
  *
  * Marks a contribution as complete
  *
- * @param string $contribution_id The ID of the contribution to mark as complete
+ * @param object $contribution The contribution to mark as complete
  * @return object The contribution object
  */
-function complete_contribution($contribution_id)
+function complete_contribution($contribution)
 {
     // Mark the contribution as complete
-    $contribution = new CRM_Contribute_BAO_Contribution();
-    $contribution->id = $contribution_id;
-    $contribution->find(true);
-    $contribution->contribution_status_id = 1;
-    $contribution->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
+    $completed = new CRM_Contribute_BAO_Contribution();
+    $completed->id = $contribution->id;
+    $completed->find(true);
+    $completed->trxn_id = $contribution->trxn_id;
+    $completed->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID;
+    $completed->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
 
-    return $contribution->save();
+    return $completed->save();
+}
+
+/**
+ * update_recurring_contribution
+ *
+ * Updates the recurring contribution
+ *
+ * @param object $current_recur The ID of the recurring contribution
+ * @return object The recurring contribution object
+ */
+function update_recurring_contribution($current_recur)
+{
+    /*
+     * Creating a new recurrence object as the DAO had problems saving unless
+     * all the dates were overwritten. Seems easier to create a new object and
+     * only update the fields that are needed
+     */
+    $updated_recur = new CRM_Contribute_BAO_ContributionRecur();
+    $updated_recur->id = $current_recur->id;
+    
+    /*
+     * Update the next date to schedule a contribution. If this is after the
+     * date of the last installment, mark the recurring contribution as complete
+     */
+    $updated_recur->next_sched_contribution_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
+    if ( isset($current_recur->installments) && $current_recur->installments > 0 ) {
+        $lapses = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime($current_recur->start_date . ' +' . ($current_recur->installments - 1) . ' month')));
+        if ($updated_recur->next_sched_contribution_date > $lapses) {
+            $updated_recur->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID;
+            $updated_recur->end_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
+        }
+    }
+
+    return $updated_recur->save();
 }
 
 /**
@@ -331,7 +367,7 @@ function send_receipt_email($contribution_id)
         'isTest' => $contribution->is_test
     );
 
-    list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplates::sendTemplate($params);
+    list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($params);
 
     return $sent;
 }
