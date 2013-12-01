@@ -31,7 +31,7 @@ define('COMPLETE_CONTRIBUTION_STATUS_ID', 1);
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 define('CANCELLED_CONTRIBUTION_STATUS_ID', 3);
 // The ID of your CiviCRM eWay recurring payment processor
-define('PAYMENT_PROCESSOR_ID', 3);
+define('PAYMENT_PROCESSOR_ID', 9);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
@@ -39,6 +39,9 @@ chdir(CIVICRM_DIRECTORY);
 require 'civicrm.config.php';
 require 'CRM/Core/Config.php';
 $config = CRM_Core_Config::singleton();
+
+$_SERVER['REMOTE_ADDR'] = "127.0.0.1";
+CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, CIVICRM_DIRECTORY);
 
 require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
@@ -260,6 +263,9 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
  */
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
+    //PHP bug: https://bugs.php.net/bug.php?id=49669. issue with value greater than 2147483647.
+    settype($managed_customer_id,"float");
+
     $paymentinfo = array(
         'managedCustomerID' => $managed_customer_id,
         'amount' => $amount_in_cents,
