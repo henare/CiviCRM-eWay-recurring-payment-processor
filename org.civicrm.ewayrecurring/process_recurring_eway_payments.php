@@ -31,7 +31,7 @@ define('COMPLETE_CONTRIBUTION_STATUS_ID', 1);
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 define('CANCELLED_CONTRIBUTION_STATUS_ID', 3);
 // The ID of your CiviCRM eWay recurring payment processor
-define('PAYMENT_PROCESSOR_ID', 9);
+define('PAYMENT_PROCESSOR_ID', 3);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
@@ -92,12 +92,12 @@ foreach ($pending_contributions as $pending_contribution) {
     }
     echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
 
-    echo "Sending receipt\n";
-    send_receipt_email($pending_contribution['contribution']->id);
-
     echo "Marking contribution as complete\n";
     $pending_contribution['contribution']->trxn_id = $result->ewayTrxnNumber;
     complete_contribution($pending_contribution['contribution']);
+
+    echo "Sending receipt\n";
+    send_receipt_email($pending_contribution['contribution']->id);
 
     echo "Updating recurring contribution\n";
     update_recurring_contribution($pending_contribution['contribution_recur']);
@@ -263,9 +263,6 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
  */
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
-    //PHP bug: https://bugs.php.net/bug.php?id=49669. issue with value greater than 2147483647.
-    settype($managed_customer_id,"float");
-
     $paymentinfo = array(
         'managedCustomerID' => $managed_customer_id,
         'amount' => $amount_in_cents,
@@ -365,7 +362,11 @@ function send_receipt_email($contribution_id)
             'title' => RECEIPT_SUBJECT_TITLE,
             'is_recur' => true,
             'billingName' => $name,
-            'email' => $email
+            'email' => $email,
+            'trxn_id' => $contribution->trxn_id,
+            'receive_date' => $contribution->receive_date,
+            'is_monetary' => true,
+            'receipt_text' => 'Thank you for supporting the work of the City Bible Forum.',
         ),
         'from' => $receiptFrom,
         'toName' => $name,
