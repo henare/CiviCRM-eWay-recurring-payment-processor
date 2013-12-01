@@ -39,10 +39,10 @@ function civicrm_api3_eway_process($params) {
     // The full path to your CiviCRM directory
     //define('CIVICRM_DIRECTORY', '/Library/WebServer/Documents/civisandbox/sites/default');
     // The ID for contributions in a pending status
-    define('PENDING_CONTRIBUTION_STATUS_ID', 2);
+    //define('PENDING_CONTRIBUTION_STATUS_ID', 2);
     // The ID of your CiviCRM eWay recurring payment processor
-    define('PAYMENT_PROCESSOR_ID', 9);
-    define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
+    //define('PAYMENT_PROCESSOR_ID', 9);
+    //define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
     // Initialise CiviCRM
 //    chdir(CIVICRM_DIRECTORY);
