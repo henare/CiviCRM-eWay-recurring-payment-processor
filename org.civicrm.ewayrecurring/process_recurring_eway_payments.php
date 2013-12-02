@@ -137,6 +137,7 @@ foreach ($scheduled_contributions as $contribution) {
     $new_contribution_record->contact_id = $contribution->contact_id;
     $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
     $new_contribution_record->total_amount = $contribution->amount;
+    $new_contribution_record->non_deductible_amount = $contribution->amount;
     $new_contribution_record->trxn_id = $result->ewayTrxnNumber;
     $new_contribution_record->contribution_recur_id = $contribution->id;
     $new_contribution_record->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID; // TODO: Remove hardcoded hack
@@ -400,6 +401,15 @@ function send_receipt_email($contribution_id)
     $domainValues     = CRM_Core_BAO_Domain::getNameAndEmail();
     $receiptFrom      = "$domainValues[0] <$domainValues[1]>";
     $receiptFromEmail = $domainValues[1];
+    
+    $page = new CRM_Contribute_BAO_ContributionPage();
+    $page->id = $contribution->contribution_page_id;
+    $page->find(true);
+    if (isset($page->receipt_text)) {
+        $receipt_text = $page->receipt_text;
+    } else {
+        $receipt_text = 'Thank you for your contribution.';
+    }
 
     $params = array(
         'groupName' => 'msg_tpl_workflow_contribution',
@@ -416,7 +426,7 @@ function send_receipt_email($contribution_id)
             'trxn_id' => $contribution->trxn_id,
             'receive_date' => $contribution->receive_date,
             'is_monetary' => true,
-            'receipt_text' => 'Thank you for supporting the work of the City Bible Forum.',
+            'receipt_text' => $receipt_text,
         ),
         'from' => $receiptFrom,
         'toName' => $name,
