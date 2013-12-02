@@ -32,7 +32,7 @@ define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 define('CANCELLED_CONTRIBUTION_STATUS_ID', 3);
 define('IN_PROGRESS_CONTRIBUTION_STATUS_ID', 5);
 // The ID of your CiviCRM eWay recurring payment processor
-define('PAYMENT_PROCESSOR_ID', 3);
+define('PAYMENT_PROCESSOR_ID', 9);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 
 // Initialise CiviCRM
@@ -240,7 +240,6 @@ function get_scheduled_contributions()
     $scheduled_contributions = array();
 
     while ($scheduled_today->fetch()) {
-
         // Check that there's no existing contribution record for today
         $contribution = new CRM_Contribute_BAO_Contribution();
         $contribution->contribution_recur_id = $scheduled_today->id;
@@ -271,7 +270,7 @@ function get_scheduled_contributions()
  */
 function eway_token_client($gateway_url, $eway_customer_id, $username, $password)
 {
-    $soap_client = new SoapClient($gateway_url, array('trace' => 1));
+    $soap_client = new SoapClient($gateway_url);
 
     // Set up SOAP headers
     $headers = array(
@@ -300,7 +299,7 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
  */
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
-    //PHP bug: https://bugs.php.net/bug.php?id=49669. issue with value greater than 2147483647.
+    // PHP bug: https://bugs.php.net/bug.php?id=49669. issue with value greater than 2147483647.
     settype($managed_customer_id,"float");
 	
     $paymentinfo = array(
