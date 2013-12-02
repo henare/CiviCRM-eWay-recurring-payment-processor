@@ -30,6 +30,7 @@ define('CIVICRM_DIRECTORY', '/var/www/citybibleforum/sites/all/modules/civicrm')
 define('COMPLETE_CONTRIBUTION_STATUS_ID', 1);
 define('PENDING_CONTRIBUTION_STATUS_ID', 2);
 define('CANCELLED_CONTRIBUTION_STATUS_ID', 3);
+define('IN_PROGRESS_CONTRIBUTION_STATUS_ID', 5);
 // The ID of your CiviCRM eWay recurring payment processor
 define('PAYMENT_PROCESSOR_ID', 3);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
@@ -129,15 +130,25 @@ foreach ($scheduled_contributions as $contribution) {
     }
     echo "Successfully processed payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
 
+    $past_contribution = get_first_contribution_from_recurring($contribution->id);
+
     echo "Creating contribution record\n";
     $new_contribution_record = new CRM_Contribute_BAO_Contribution();
     $new_contribution_record->contact_id = $contribution->contact_id;
-    $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
+    $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
     $new_contribution_record->total_amount = $contribution->amount;
     $new_contribution_record->trxn_id = $result->ewayTrxnNumber;
     $new_contribution_record->contribution_recur_id = $contribution->id;
     $new_contribution_record->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID; // TODO: Remove hardcoded hack
     $new_contribution_record->financial_type_id = $contribution->financial_type_id;
+    $new_contribution_record->currency = $contribution->currency;
+    //copy info from previous contribution belonging to the same recurring contrib
+    if($past_contribution!=null){
+        $new_contribution_record->contribution_page_id = $past_contribution->contribution_page_id;
+        $new_contribution_record->payment_instrument_id = $past_contribution->payment_instrument_id;
+        $new_contribution_record->source = $past_contribution->source;
+        $new_contribution_record->address_id = $past_contribution->address_id;
+    }
     $new_contribution_record->save();
 
     echo "Sending receipt\n";
@@ -146,6 +157,29 @@ foreach ($scheduled_contributions as $contribution) {
     echo "Updating recurring contribution\n";
     update_recurring_contribution($contribution);
     echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
+}
+
+
+/**
+ * get_first_contribution_from_recurring
+ *
+ * find the latest contribution belonging to the recurring contribution so that we
+ * can extract some info for cloning, like source etc
+ *
+ * @return a contribution object
+ */
+function get_first_contribution_from_recurring($recur_id)
+{
+    $contributions = new CRM_Contribute_BAO_Contribution();
+    $contributions->whereAdd("`contribution_recur_id` = " . $recur_id);
+    $contributions->find();
+
+    $result = array();
+
+    while ($contributions->fetch()) {
+        echo "Found first contribution for this reccurring with ID:".$contributions->id."\n";
+        return clone($contributions);//return the first found. It should not matter
+    }
 }
 
 /**
@@ -205,6 +239,7 @@ function get_scheduled_contributions()
     $scheduled_contributions = array();
 
     while ($scheduled_today->fetch()) {
+
         // Check that there's no existing contribution record for today
         $contribution = new CRM_Contribute_BAO_Contribution();
         $contribution->contribution_recur_id = $scheduled_today->id;
@@ -213,7 +248,8 @@ function get_scheduled_contributions()
         if ($contribution->find() == 0) {
             $scheduled_contributions[] = clone($scheduled_today);
         }else{
-            echo "WARNING: Attempted to reprocess recurring contribution ID " . $scheduled_today->id .  ". Skipping and updating recurring contribution\n";
+            echo "WARNING: Attempted to reprocess recurring contribution ID " . $scheduled_today->id . 
+                 ". Skipping and updating recurring contribution\n";
             update_recurring_contribution($scheduled_today);
         }
     }
@@ -234,7 +270,7 @@ function get_scheduled_contributions()
  */
 function eway_token_client($gateway_url, $eway_customer_id, $username, $password)
 {
-    $soap_client = new SoapClient($gateway_url);
+    $soap_client = new SoapClient($gateway_url, array('trace' => 1));
 
     // Set up SOAP headers
     $headers = array(
@@ -263,6 +299,9 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
  */
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
+    //PHP bug: https://bugs.php.net/bug.php?id=49669. issue with value greater than 2147483647.
+    settype($managed_customer_id,"float");
+	
     $paymentinfo = array(
         'managedCustomerID' => $managed_customer_id,
         'amount' => $amount_in_cents,
@@ -270,8 +309,15 @@ function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cen
         'InvoiceDescription' => $invoice_description
     );
 
-    $result = $soap_client->ProcessPayment($paymentinfo);
-    $eway_response = $result->ewayResponse;
+    //soap call to Eway with error handling
+    try{
+        $result = $soap_client->ProcessPayment($paymentinfo);
+        $eway_response = $result->ewayResponse;
+
+    } catch (Exception $e) {
+        echo 'Caught exception: ',  $e->getMessage(), "\n";
+        //echo "LAST SOAP REQUEST:\n" . $soap_client->__getLastRequest() . "\n";
+    }
 
     return $eway_response;
 }
@@ -314,6 +360,8 @@ function update_recurring_contribution($current_recur)
      */
     $updated_recur = new CRM_Contribute_BAO_ContributionRecur();
     $updated_recur->id = $current_recur->id;
+    $updated_recur->contribution_status_id = IN_PROGRESS_CONTRIBUTION_STATUS_ID;
+    $updated_recur->modified_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
     
     /*
      * Update the next date to schedule a contribution. If this is after the
@@ -321,7 +369,9 @@ function update_recurring_contribution($current_recur)
      */
     $updated_recur->next_sched_contribution_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
     if ( isset($current_recur->installments) && $current_recur->installments > 0 ) {
-        $lapses = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime($current_recur->start_date . ' +' . ($current_recur->installments - 1) . ' month')));
+        $lapses = CRM_Utils_Date::isoToMysql(
+                    date('Y-m-d 00:00:00',
+                            strtotime($current_recur->start_date . ' +' . ($current_recur->installments - 1) . ' month')));
         if ($updated_recur->next_sched_contribution_date > $lapses) {
             $updated_recur->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID;
             $updated_recur->end_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
