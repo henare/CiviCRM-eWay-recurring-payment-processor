@@ -26,14 +26,9 @@
 // TODO: Remove hacky hardcoded constants
 // The full path to your CiviCRM directory
 define('CIVICRM_DIRECTORY', '/var/www/citybibleforum/sites/all/modules/civicrm');
+
 // The status values for contributions in various states
-define('COMPLETE_CONTRIBUTION_STATUS_ID', 1);
-define('PENDING_CONTRIBUTION_STATUS_ID', 2);
-define('CANCELLED_CONTRIBUTION_STATUS_ID', 3);
-define('IN_PROGRESS_CONTRIBUTION_STATUS_ID', 5);
-// The ID of your CiviCRM eWay recurring payment processor
-define('PAYMENT_PROCESSOR_ID', 9);
-define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
+define('RECEIPT_SUBJECT_TITLE', 'Regular Donation');
 
 // Initialise CiviCRM
 chdir(CIVICRM_DIRECTORY);
@@ -47,30 +42,21 @@ CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, CIVICRM_DIRECTORY);
 require_once 'api/api.php';
 require_once 'CRM/Contribute/BAO/ContributionRecur.php';
 require_once 'CRM/Contribute/BAO/Contribution.php';
+require_once 'CRM/Contribute/PseudoConstant.php';
 require_once 'CRM/Financial/BAO/PaymentProcessor.php';
 require_once 'CRM/Utils/Date.php';
 require_once 'CRM/Core/BAO/MessageTemplate.php';
 require_once 'CRM/Contact/BAO/Contact/Location.php';
 require_once 'CRM/Core/BAO/Domain.php';
 
-// Create eWay token clients
-$live_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'live');
-$live_token_client = eway_token_client(
-    $live_payment_processor['url_recur'],
-    $live_payment_processor['subject'],
-    $live_payment_processor['user_name'],
-    $live_payment_processor['password']
-);
-$test_payment_processor = CRM_Financial_BAO_PaymentProcessor::getPayment(PAYMENT_PROCESSOR_ID, 'test');
-$test_token_client = eway_token_client(
-    $test_payment_processor['url_recur'],
-    $test_payment_processor['subject'],
-    $test_payment_processor['user_name'],
-    $test_payment_processor['password']
-);
+// Get contribution status values
+$contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
+// Create eWAY token clients
+$eway_token_clients = get_eway_token_clients();
 
 // Get pending contributions
-$pending_contributions = get_pending_recurring_contributions();
+$pending_contributions = get_pending_recurring_contributions($eway_token_clients);
 
 echo "Processing " . count($pending_contributions) . " pending contributions\n";
 foreach ($pending_contributions as $pending_contribution) {
@@ -78,7 +64,7 @@ foreach ($pending_contributions as $pending_contribution) {
     echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
     $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
     $result = process_eway_payment(
-        ($pending_contribution['contribution']->is_test ? $test_token_client : $live_token_client),
+        $eway_token_clients[$pending_contribution['contribution_recur']->payment_processor_id],
         $pending_contribution['contribution_recur']->processor_id,
         $amount_in_cents,
         $pending_contribution['contribution']->invoice_id,
@@ -106,7 +92,7 @@ foreach ($pending_contributions as $pending_contribution) {
 }
 
 // Process today's scheduled contributions
-$scheduled_contributions = get_scheduled_contributions();
+$scheduled_contributions = get_scheduled_contributions($eway_token_clients);
 
 echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
 foreach ($scheduled_contributions as $contribution) {
@@ -114,7 +100,7 @@ foreach ($scheduled_contributions as $contribution) {
     echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
     $amount_in_cents = str_replace('.', '', $contribution->amount);
     $result = process_eway_payment(
-        ($contribution->is_test ? $test_token_client : $live_token_client),
+        $eway_token_clients[$contribution->payment_processor_id],
         $contribution->processor_id,
         $amount_in_cents,
         $contribution->invoice_id,
@@ -138,9 +124,11 @@ foreach ($scheduled_contributions as $contribution) {
     $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
     $new_contribution_record->total_amount = $contribution->amount;
     $new_contribution_record->non_deductible_amount = $contribution->amount;
+    $new_contribution_record->net_amount = $contribution->amount;
     $new_contribution_record->trxn_id = $result->ewayTrxnNumber;
+    $new_contribution_record->invoice_id = md5(uniqid(rand(), TRUE));
     $new_contribution_record->contribution_recur_id = $contribution->id;
-    $new_contribution_record->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID; // TODO: Remove hardcoded hack
+    $new_contribution_record->contribution_status_id = array_search('Completed', $contributionStatus);
     $new_contribution_record->financial_type_id = $contribution->financial_type_id;
     $new_contribution_record->currency = $contribution->currency;
     //copy info from previous contribution belonging to the same recurring contrib
@@ -160,6 +148,30 @@ foreach ($scheduled_contributions as $contribution) {
     echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
 }
 
+/**
+ * get_eway_token_clients
+ * 
+ * Find the eWAY recurring payment processors
+ * 
+ * @return array An associative array of Processor Id => eWAY Token Client
+ */
+function get_eway_token_clients() {
+    $processor = new CRM_Financial_BAO_PaymentProcessor();
+    $processor->whereAdd("`class_name` = 'org.civicrm.ewayrecurring'");
+    $processor->find();
+
+    $result = array();
+
+    while ($processor->fetch()) {
+        $result[$processor->id] = eway_token_client (
+                                        $processor->url_recur,
+                                        $processor->subject,
+                                        $processor->user_name,
+                                        $processor->password );
+    }
+
+    return $result;
+}
 
 /**
  * get_first_contribution_from_recurring
@@ -173,13 +185,12 @@ function get_first_contribution_from_recurring($recur_id)
 {
     $contributions = new CRM_Contribute_BAO_Contribution();
     $contributions->whereAdd("`contribution_recur_id` = " . $recur_id);
+    $contributions->orderBy("`id`");
     $contributions->find();
-
-    $result = array();
 
     while ($contributions->fetch()) {
         echo "Found first contribution for this reccurring with ID:".$contributions->id."\n";
-        return clone($contributions);//return the first found. It should not matter
+        return clone($contributions);
     }
 }
 
@@ -193,30 +204,28 @@ function get_first_contribution_from_recurring($recur_id)
  *
  * @return array An array of associative arrays containing contribution & contribution_recur objects
  */
-function get_pending_recurring_contributions()
+function get_pending_recurring_contributions($eway_token_clients)
 {
-    // Get pending contributions
-    $pending_contributions = new CRM_Contribute_BAO_Contribution();
-    $pending_contributions->whereAdd("`contribution_status_id` = " . PENDING_CONTRIBUTION_STATUS_ID);
-    $pending_contributions->find();
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
+    // Get the Recurring Contributions that are Pending for this Payment Processor
+    $recurring = new CRM_Contribute_BAO_ContributionRecur();
+    $recurring->whereAdd( "`contribution_status_id` = " . array_search('Pending', $contributionStatus) );
+    $recurring->whereAdd( "`payment_processor_id` in (" . implode(', ', array_keys($eway_token_clients)) . ")" );
+    $recurring->find();
 
     $result = array();
 
-    while ($pending_contributions->fetch()) {
-        // Only process those with recurring contribution records
-        if ($pending_contributions->contribution_recur_id) {
-            // Find the recurring contribution record for this contribution
-            $recurring = new CRM_Contribute_BAO_ContributionRecur();
-            $recurring->id = $pending_contributions->contribution_recur_id;
+    while ( $recurring->fetch() ) {
+        // Get the Contribution
+        $contribution = new CRM_Contribute_BAO_Contribution();
+        $contribution->whereAdd("`contribution_recur_id` = " . $recurring->id);
 
-            // Only process records that have a recurring record with
-            // a processor ID, i.e. an eWay token
-            if ($recurring->find(true) && $recurring->processor_id) {
-                $result[] = array(
-                    'contribution' => clone($pending_contributions),
-                    'contribution_recur' => clone($recurring)
-                );
-            }
+        if ( $contribution->find(true) ) {
+            $result[] = array(
+                            'contribution' => clone($contribution),
+                            'contribution_recur' => clone($recurring)
+                        );
         }
     }
     return $result;
@@ -229,32 +238,24 @@ function get_pending_recurring_contributions()
  *
  * @return array An array of contribution_recur objects
  */
-function get_scheduled_contributions()
+function get_scheduled_contributions($eway_token_clients)
 {
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
+    // Get Recurring Contributions that are In Progress and are due to be processed by the eWAY Recurring processor
     $scheduled_today = new CRM_Contribute_BAO_ContributionRecur();
     $scheduled_today->whereAdd("`next_sched_contribution_date` <= '" . date('Y-m-d 00:00:00') . "'");
-    // Don't get cancelled contributions
-    $scheduled_today->whereAdd("`contribution_status_id` != " . CANCELLED_CONTRIBUTION_STATUS_ID);
+    $scheduled_today->whereAdd("`contribution_status_id` = " . array_search('In Progress', $contributionStatus));
+    $scheduled_today->whereAdd( "`payment_processor_id` in (" . implode(', ', array_keys($eway_token_clients)) . ")" );
     $scheduled_today->find();
 
-    $scheduled_contributions = array();
+    $result = array();
 
     while ($scheduled_today->fetch()) {
-        // Check that there's no existing contribution record for today
-        $contribution = new CRM_Contribute_BAO_Contribution();
-        $contribution->contribution_recur_id = $scheduled_today->id;
-        $contribution->whereAdd("`receive_date` = '" . date('Y-m-d 00:00:00') . "'");
-
-        if ($contribution->find() == 0) {
-            $scheduled_contributions[] = clone($scheduled_today);
-        }else{
-            echo "WARNING: Attempted to reprocess recurring contribution ID " . $scheduled_today->id . 
-                 ". Skipping and updating recurring contribution\n";
-            update_recurring_contribution($scheduled_today);
-        }
+        $result[] = clone($scheduled_today);
     }
 
-    return $scheduled_contributions;
+    return $result;
 }
 
 /**
@@ -332,12 +333,14 @@ function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cen
  */
 function complete_contribution($contribution)
 {
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
     // Mark the contribution as complete
     $completed = new CRM_Contribute_BAO_Contribution();
     $completed->id = $contribution->id;
     $completed->find(true);
     $completed->trxn_id = $contribution->trxn_id;
-    $completed->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID;
+    $completed->contribution_status_id = array_search('Completed', $contributionStatus);
     $completed->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
 
     return $completed->save();
@@ -353,6 +356,8 @@ function complete_contribution($contribution)
  */
 function update_recurring_contribution($current_recur)
 {
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+
     /*
      * Creating a new recurrence object as the DAO had problems saving unless
      * all the dates were overwritten. Seems easier to create a new object and
@@ -360,20 +365,25 @@ function update_recurring_contribution($current_recur)
      */
     $updated_recur = new CRM_Contribute_BAO_ContributionRecur();
     $updated_recur->id = $current_recur->id;
-    $updated_recur->contribution_status_id = IN_PROGRESS_CONTRIBUTION_STATUS_ID;
+    $updated_recur->contribution_status_id = array_search('In Progress', $contributionStatus);
     $updated_recur->modified_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
     
     /*
-     * Update the next date to schedule a contribution. If this is after the
-     * date of the last installment, mark the recurring contribution as complete
+     * Update the next date to schedule a contribution. 
+     * If all installments complete, mark the recurring contribution as complete
      */
-    $updated_recur->next_sched_contribution_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00', strtotime("+1 month")));
+    $updated_recur->next_sched_contribution_date = CRM_Utils_Date::isoToMysql(
+            date('Y-m-d 00:00:00', 
+                    strtotime( '+' . $current_recur->frequency_interval . ' ' . $current_recur->frequency_unit)
+            )
+    );
     if ( isset($current_recur->installments) && $current_recur->installments > 0 ) {
-        $lapses = CRM_Utils_Date::isoToMysql(
-                    date('Y-m-d 00:00:00',
-                            strtotime($current_recur->start_date . ' +' . ($current_recur->installments - 1) . ' month')));
-        if ($updated_recur->next_sched_contribution_date > $lapses) {
-            $updated_recur->contribution_status_id = COMPLETE_CONTRIBUTION_STATUS_ID;
+        $contributions = new CRM_Contribute_BAO_Contribution();
+        $contributions->whereAdd("`contribution_recur_id` = " . $current_recur->id);
+        $contributions->find();
+        if ($contributions->N >= $current_recur->installments) {
+            $updated_recur->next_sched_contribution_date = null;
+            $updated_recur->contribution_status_id = array_search('Completed', $contributionStatus);
             $updated_recur->end_date = CRM_Utils_Date::isoToMysql(date('Y-m-d 00:00:00'));
         }
     }
