@@ -235,6 +235,20 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
                 $managed_customer_id
             );
 
+            //send recurring Notification email for user
+            require_once 'CRM/Contribute/BAO/ContributionRecur.php';
+            $recur = new CRM_Contribute_BAO_ContributionRecur();
+            $recur->id = $params['contributionRecurID'];
+            $recur->find(true);
+            $autoRenewMembership = FALSE;
+            CRM_Contribute_BAO_ContributionPage::recurringNotify(
+                CRM_Core_Payment::RECURRING_PAYMENT_START,
+                $params['contactID'],
+                $params['contributionPageID'],
+                $recur,
+                $autoRenewMembership
+            );
+
             /* And we're done - this payment will staying in a pending state until it's processed
              * by the cronjob
              */
