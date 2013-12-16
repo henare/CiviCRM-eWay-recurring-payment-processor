@@ -547,6 +547,24 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         }
     }
 
+    /*
+     * All details about recurring contributions are maintained in CiviCRM, and
+     * eWAY only records the Token Customer and completed contributions. Given
+     * this, we can provide a do-nothing implementation of 'cancelSubscription' 
+     */
+    function cancelSubscription(&$message = '', $params = array() ) {
+        return TRUE;
+    }
+
+    /*
+     * All details about recurring contributions are maintained in CiviCRM, and
+     * eWAY only records the Token Customer and completed contributions. Given
+     * this, we can provide a do-nothing implementation of 'changeSubscriptionAmount' 
+     */
+    function changeSubscriptionAmount(&$message = '', $params = array() ) {
+        return TRUE;
+    }
+
     function send_alert_email($p_eWAY_tran_num, $p_trxn_out, $p_trxn_back, $p_request, $p_response)
     {
         // Initialization call is required to use CiviCRM APIs.
