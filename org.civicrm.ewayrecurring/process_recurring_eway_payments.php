@@ -425,7 +425,7 @@ function send_receipt_email($contribution_id)
         'valueName' => 'contribution_online_receipt',
         'contactId' => $contribution->contact_id,
         'tplParams' => array(
-            'contributeMode' => 'directIPN', // Tells the person to contact us for cancellations
+            'contributeMode' => 'directIPN',
             'receiptFromEmail' => $receiptFromEmail,
             'amount' => $contribution->total_amount,
             'title' => RECEIPT_SUBJECT_TITLE,
@@ -442,6 +442,21 @@ function send_receipt_email($contribution_id)
         'toEmail' => $email,
         'isTest' => $contribution->is_test
     );
+
+    $eWayProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity
+                    ($contribution->contribution_recur_id, 'recur', 'obj');
+    if ( $eWayProcessor->isSupported('cancelSubscription') ) {
+    	$params['tplParams']['cancelSubscriptionUrl'] =
+    	        $eWayProcessor->subscriptionURL($contribution->contribution_recur_id, 'recur');
+    }
+    if ( $eWayProcessor->isSupported('updateSubscriptionBillingInfo') ) {
+    	$params['tplParams']['updateSubscriptionBillingUrl'] =
+    	        $eWayProcessor->subscriptionURL($contribution->contribution_recur_id, 'recur', 'billing');
+    }
+    if ( $eWayProcessor->isSupported('changeSubscriptionAmount') ) {
+    	$params['tplParams']['updateSubscriptionUrl'] =
+    	        $eWayProcessor->subscriptionURL($contribution->contribution_recur_id, 'recur', 'update');
+    }
 
     list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($params);
 
