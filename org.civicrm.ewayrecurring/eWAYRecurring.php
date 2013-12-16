@@ -205,7 +205,7 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
                 'Phone' => '',
                 'Mobile' => '',
                 'CustomerRef' => '',
-                'JobDesc' => $params['description'],
+                'JobDesc' => '',
                 'Comments' => '',
                 'URL' => '',
                 'CCNumber' => $params['credit_card_number'],
