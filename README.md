@@ -1,3 +1,5 @@
+This is very much BETA right now, go ahead and use it, but I make no guarantees about anything, however, you will be helping me test things :)
+
 These settings need to be added to the 'civicrm.settings.php' file, I will figure out how to change this in the future.
 
     define('PENDING_CONTRIBUTION_STATUS_ID', 2);
