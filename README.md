@@ -10,3 +10,5 @@ These settings need to be added to the 'civicrm.settings.php' file, I will figur
 
     define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
     // Every period a receipt will get sent, what should it's subject be
+
+This extension has quite a history, this documentation will be fleshed out in teh future, but it wouldn't have been possible without the efforts and backing of : Voiceless, Community Builders, Henare Degan and RIGPA.
