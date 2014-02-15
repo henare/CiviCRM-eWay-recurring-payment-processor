@@ -184,7 +184,7 @@ function civicrm_api3_job_eway($params) {
  */
 function get_eway_token_clients() {
     $processor = new CRM_Financial_BAO_PaymentProcessor();
-    $processor->whereAdd("`class_name` = 'org.civicrm.ewayrecurring'");
+    $processor->whereAdd("`class_name` = 'com.chrischinchilla.ewayrecurring'");
     $processor->find();
 
     $result = array();
