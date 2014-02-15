@@ -165,7 +165,7 @@ $soap_client->setHeaders($headers);
                 'man:Fax' => '',
                 'man:Phone' => '',
                 'man:Mobile' => '',
-                'man:CustomerRef' => ''
+                'man:CustomerRef' => '',
                 'man:JobDesc' => '',
                 'man:Comments' => '',
                 'man:URL' => '',
