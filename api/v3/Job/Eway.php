@@ -22,130 +22,157 @@
  | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
  +--------------------------------------------------------------------+
 */
+/**
+ * eWayProcess API call
+ *
+ * @param array $params
+ * @return array API result descriptor
+ * @see civicrm_api3_create_success
+ * @see civicrm_api3_create_error
+ * @throws API_Exception
+ */
+//function civicrm_api3_job_googleapps_sync($params) {
 
-// TODO: Remove hacky hardcoded constants
-// The full path to your CiviCRM directory
-define('CIVICRM_DIRECTORY', '/var/www/citybibleforum/sites/all/modules/civicrm');
+function civicrm_api3_job_eway($params) {
 
-// The status values for contributions in various states
-define('RECEIPT_SUBJECT_TITLE', 'Regular Donation');
+    // TODO: Remove hacky hardcoded constants
+    // The full path to your CiviCRM directory
+    define('CIVICRM_DIRECTORY', '/var/www/citybibleforum/sites/all/modules/civicrm');
+    // The title used for receipt messages
+    define('RECEIPT_SUBJECT_TITLE', 'Regular Donation');
 
-// Initialise CiviCRM
-chdir(CIVICRM_DIRECTORY);
-require 'civicrm.config.php';
-require 'CRM/Core/Config.php';
-$config = CRM_Core_Config::singleton();
+    // Initialise CiviCRM
+    chdir(CIVICRM_DIRECTORY);
+    require 'civicrm.settings.php';
+    require 'CRM/Core/Config.php';
+    $config = CRM_Core_Config::singleton();
 
-$_SERVER['REMOTE_ADDR'] = "127.0.0.1";
-CRM_Utils_System::loadBootstrap(array(), FALSE, FALSE, CIVICRM_DIRECTORY);
+    require_once 'api/api.php';
+    require_once 'CRM/Contribute/BAO/ContributionRecur.php';
+    require_once 'CRM/Contribute/BAO/Contribution.php';
+    require_once 'CRM/Contribute/PseudoConstant.php';
+    require_once 'CRM/Financial/BAO/PaymentProcessor.php';
+    require_once 'CRM/Utils/Date.php';
+    require_once 'CRM/Core/BAO/MessageTemplate.php';
+    require_once 'CRM/Contact/BAO/Contact/Location.php';
+    require_once 'CRM/Core/BAO/Domain.php';
+    require_once 'nusoap.php';
 
-require_once 'api/api.php';
-require_once 'CRM/Contribute/BAO/ContributionRecur.php';
-require_once 'CRM/Contribute/BAO/Contribution.php';
-require_once 'CRM/Contribute/PseudoConstant.php';
-require_once 'CRM/Financial/BAO/PaymentProcessor.php';
-require_once 'CRM/Utils/Date.php';
-require_once 'CRM/Core/BAO/MessageTemplate.php';
-require_once 'CRM/Contact/BAO/Contact/Location.php';
-require_once 'CRM/Core/BAO/Domain.php';
 
-// Get contribution status values
-$contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+    // Get contribution status values
+    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
 
-// Create eWAY token clients
-$eway_token_clients = get_eway_token_clients();
+    // Create eWay token clients
+    $eway_token_clients = get_eway_token_clients();
 
-// Get pending contributions
-$pending_contributions = get_pending_recurring_contributions($eway_token_clients);
+    // Get pending contributions
+    $pending_contributions = get_pending_recurring_contributions($eway_token_clients);
 
-echo "Processing " . count($pending_contributions) . " pending contributions\n";
-foreach ($pending_contributions as $pending_contribution) {
-    // Process payment
-    echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
-    $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
-    $result = process_eway_payment(
-        $eway_token_clients[$pending_contribution['contribution_recur']->payment_processor_id],
-        $pending_contribution['contribution_recur']->processor_id,
-        $amount_in_cents,
-        $pending_contribution['contribution']->invoice_id,
-        $pending_contribution['contribution']->source
-    );
+    echo "Processing " . count($pending_contributions) . " pending contributions\n";
+    foreach ($pending_contributions as $pending_contribution) {
+        // Process payment
+        echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
+        $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
+        $result = process_eway_payment(
+            $eway_token_clients[$pending_contribution['contribution_recur']->payment_processor_id],
+            $pending_contribution['contribution_recur']->processor_id,
+            $amount_in_cents,
+            $pending_contribution['contribution']->invoice_id,
+            $pending_contribution['contribution']->source
+        );
 
-    // Bail if the transaction fails
-    if ($result->ewayTrxnStatus != 'True') {
-        echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id . "\n";
-        echo 'eWay response: ' . $result->ewayTrxnError . "\n";
-        continue;
+        // Bail if the transaction fails
+        if ($result['ewayTrxnStatus'] != 'True') {
+            echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id . "\n";
+            echo 'eWay response: ' . $result['ewayTrxnError'] . "\n";
+            continue;
+        }
+        echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
+
+        echo "Marking contribution as complete\n";
+        $pending_contribution['contribution']->trxn_id = $result->ewayTrxnNumber;
+        complete_contribution($pending_contribution['contribution']);
+
+        echo "Sending receipt\n";
+        send_receipt_email($pending_contribution['contribution']->id);
+
+        echo "Updating recurring contribution\n";
+        update_recurring_contribution($pending_contribution['contribution_recur']);
+        echo "Finished processing contribution ID: " . $pending_contribution['contribution']->id . "\n";
     }
-    echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
 
-    echo "Marking contribution as complete\n";
-    $pending_contribution['contribution']->trxn_id = $result->ewayTrxnNumber;
-    complete_contribution($pending_contribution['contribution']);
+    // Process today's scheduled contributions
+    $scheduled_contributions = get_scheduled_contributions($eway_token_clients);
 
-    echo "Sending receipt\n";
-    send_receipt_email($pending_contribution['contribution']->id);
+    echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
+    foreach ($scheduled_contributions as $contribution) {
+        // Process payment
+        echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
+        $amount_in_cents = str_replace('.', '', $contribution->amount);
+        $result = process_eway_payment(
+            $eway_token_clients[$contribution->payment_processor_id],
+            $contribution->processor_id,
+            $amount_in_cents,
+            $contribution->invoice_id,
+            ''
+        );
 
-    echo "Updating recurring contribution\n";
-    update_recurring_contribution($pending_contribution['contribution_recur']);
-    echo "Finished processing contribution ID: " . $pending_contribution['contribution']->id . "\n";
-}
+    // Process today's scheduled contributions
+    $scheduled_contributions = get_scheduled_contributions();
 
-// Process today's scheduled contributions
-$scheduled_contributions = get_scheduled_contributions($eway_token_clients);
+    echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
+    foreach ($scheduled_contributions as $contribution) {
+        // Process payment
+        echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
+        $amount_in_cents = str_replace('.', '', $contribution->amount);
+        $result = process_eway_payment(
+            ($contribution->is_test ? $test_token_client : $live_token_client),
+            $contribution->processor_id,
+            $amount_in_cents,
+            $contribution->invoice_id,
+            ''
+        );
 
-echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
-foreach ($scheduled_contributions as $contribution) {
-    // Process payment
-    echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
-    $amount_in_cents = str_replace('.', '', $contribution->amount);
-    $result = process_eway_payment(
-        $eway_token_clients[$contribution->payment_processor_id],
-        $contribution->processor_id,
-        $amount_in_cents,
-        $contribution->invoice_id,
-        ''
-    );
+        // Bail if the transaction fails
+        if ($result->ewayTrxnStatus != 'True') {
+            echo 'ERROR: Failed to process transaction for managed customer: ' . $contribution->processor_id;
+            echo 'eWay response: ' . $result->ewayTrxnError;
+            // TODO: Mark transaction as failed
+            continue;
+        }
+        echo "Successfully processed payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
 
-    // Bail if the transaction fails
-    if ($result->ewayTrxnStatus != 'True') {
-        echo 'ERROR: Failed to process transaction for managed customer: ' . $contribution->processor_id;
-        echo 'eWay response: ' . $result->ewayTrxnError;
-        // TODO: Mark transaction as failed
-        continue;
+        $past_contribution = get_first_contribution_from_recurring($contribution->id);
+
+        echo "Creating contribution record\n";
+        $new_contribution_record = new CRM_Contribute_BAO_Contribution();
+        $new_contribution_record->contact_id = $contribution->contact_id;
+        $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
+        $new_contribution_record->total_amount = $contribution->amount;
+        $new_contribution_record->non_deductible_amount = $contribution->amount;
+        $new_contribution_record->net_amount = $contribution->amount;
+        $new_contribution_record->trxn_id = $result->ewayTrxnNumber;
+        $new_contribution_record->invoice_id = md5(uniqid(rand(), TRUE));
+        $new_contribution_record->contribution_recur_id = $contribution->id;
+        $new_contribution_record->contribution_status_id = array_search('Completed', $contributionStatus);
+        $new_contribution_record->financial_type_id = $contribution->financial_type_id;
+        $new_contribution_record->currency = $contribution->currency;
+        //copy info from previous contribution belonging to the same recurring contribution
+        if ($past_contribution != null) {
+            $new_contribution_record->contribution_page_id = $past_contribution->contribution_page_id;
+            $new_contribution_record->payment_instrument_id = $past_contribution->payment_instrument_id;
+            $new_contribution_record->source = $past_contribution->source;
+            $new_contribution_record->address_id = $past_contribution->address_id;
+        }
+        $new_contribution_record->save();
+
+        echo "Sending receipt\n";
+        send_receipt_email($new_contribution_record->id);
+
+        echo "Updating recurring contribution\n";
+        update_recurring_contribution($contribution);
+        echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
     }
-    echo "Successfully processed payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
-
-    $past_contribution = get_first_contribution_from_recurring($contribution->id);
-
-    echo "Creating contribution record\n";
-    $new_contribution_record = new CRM_Contribute_BAO_Contribution();
-    $new_contribution_record->contact_id = $contribution->contact_id;
-    $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
-    $new_contribution_record->total_amount = $contribution->amount;
-    $new_contribution_record->non_deductible_amount = $contribution->amount;
-    $new_contribution_record->net_amount = $contribution->amount;
-    $new_contribution_record->trxn_id = $result->ewayTrxnNumber;
-    $new_contribution_record->invoice_id = md5(uniqid(rand(), TRUE));
-    $new_contribution_record->contribution_recur_id = $contribution->id;
-    $new_contribution_record->contribution_status_id = array_search('Completed', $contributionStatus);
-    $new_contribution_record->financial_type_id = $contribution->financial_type_id;
-    $new_contribution_record->currency = $contribution->currency;
-    //copy info from previous contribution belonging to the same recurring contrib
-    if($past_contribution!=null){
-        $new_contribution_record->contribution_page_id = $past_contribution->contribution_page_id;
-        $new_contribution_record->payment_instrument_id = $past_contribution->payment_instrument_id;
-        $new_contribution_record->source = $past_contribution->source;
-        $new_contribution_record->address_id = $past_contribution->address_id;
-    }
-    $new_contribution_record->save();
-
-    echo "Sending receipt\n";
-    send_receipt_email($new_contribution_record->id);
-
-    echo "Updating recurring contribution\n";
-    update_recurring_contribution($contribution);
-    echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
 }
 
 /**
@@ -271,7 +298,9 @@ function get_scheduled_contributions($eway_token_clients)
  */
 function eway_token_client($gateway_url, $eway_customer_id, $username, $password)
 {
-    $soap_client = new SoapClient($gateway_url);
+    var_dump($gateway_url);
+    //$soap_client = new SoapClient($gateway_url);
+        $soap_client = new nusoap_client($gateway_url, false);
 
     // Set up SOAP headers
     $headers = array(
@@ -279,8 +308,11 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
         'Username'       => $username,
         'Password'       => $password
     );
-    $header = new SoapHeader('https://www.eway.com.au/gateway/managedpayment', 'eWAYHeader', $headers);
-    $soap_client->__setSoapHeaders($header);
+
+    $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
+    // set SOAP header
+    $headers = "<man:eWAYHeader><man:eWAYCustomerID>" . $headers['eWAYCustomerID'] . "</man:eWAYCustomerID><man:Username>" . $headers['Username'] . "</man:Username><man:Password>" . $headers['Password'] . "</man:Password></man:eWAYHeader>";
+    $soap_client->setHeaders($headers);
 
     return $soap_client;
 }
@@ -304,23 +336,16 @@ function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cen
     settype($managed_customer_id,"float");
 	
     $paymentinfo = array(
-        'managedCustomerID' => $managed_customer_id,
-        'amount' => $amount_in_cents,
-        'InvoiceReference' => $invoice_reference,
-        'InvoiceDescription' => $invoice_description
+        'man:managedCustomerID' => $managed_customer_id,
+        'man:amount' => $amount_in_cents,
+        'man:InvoiceReference' => $invoice_reference,
+        'man:InvoiceDescription' => $invoice_description
     );
+    $soapaction = 'https://www.eway.com.au/gateway/managedpayment/ProcessPayment';
 
-    //soap call to Eway with error handling
-    try{
-        $result = $soap_client->ProcessPayment($paymentinfo);
-        $eway_response = $result->ewayResponse;
+    $result = $soap_client->call('man:ProcessPayment', $paymentinfo, '', $soapaction);
 
-    } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
-        //echo "LAST SOAP REQUEST:\n" . $soap_client->__getLastRequest() . "\n";
-    }
-
-    return $eway_response;
+    return $result;
 }
 
 /**
