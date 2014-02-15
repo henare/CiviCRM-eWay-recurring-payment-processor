@@ -4,14 +4,14 @@ CiviCRM eWay Token Recurring Payment Processor Extension
 Installing
 ----------
 
-* Copy the `org.civicrm.ewayrecurring` directory to your CiviCRM extension directory (which is located in a configurable location, see Administer > System Settings > Directories)
+* Copy the files to a subdirectory of your CiviCRM extension directory (which is located in a configurable location, see Administer > System Settings > Directories)
 * Install the extension from the Administer > System Settings > Manage Extensions administration page in CiviCRM
 * Now [set up a payment processor](http://wiki.civicrm.org/confluence/display/CRMDOC/Payment+Processors#PaymentProcessors-SetupandConfiguration) and contribution page like you would normally
 
 Additional set up
 -----------------
 
-The `process_recurring_eway_payments.php` file is intended to be run daily from the command line. It processes pending transactions and recurring transactions that are due to be processed.
+The `api/v3/Job/Eway.php` file is a CiviCRM Job which you need to schedule. It processes pending transactions and recurring transactions that are due to be processed.
 
 It is not ready to run out of the box and needs further customisation.
 * Set CIVICRM_DIRECTORY to name the directory where CiviCRM is installed (On a Drupal installation this might be '/var/www/drupal/sites/all/modules/civicrm')
