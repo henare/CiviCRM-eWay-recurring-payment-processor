@@ -426,8 +426,6 @@ $soap_client->setHeaders($headers);
             $params['gross_amount']     = $eWAYResponse->Amount();
             $params['trxn_id']          = $eWAYResponse->TransactionNumber();
         }
-               echo "<pre>";print_r($params);die;
-
         return $params;
     } // end function doDirectPayment
 
