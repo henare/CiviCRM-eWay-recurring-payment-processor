@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<extension key="com.chrischinchilla.ewayrecurring" type="payment">
+<extension key="com.chrischinchilla.ewayrecurring" type="module">
   <file>ewayrecurring</file>
   <name>eWay Recurring</name>
   <description>Recurring payments payment processor for eWay</description>
