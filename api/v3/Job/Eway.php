@@ -23,7 +23,8 @@
  +--------------------------------------------------------------------+
 */
 /**
- * eWayProcess API call
+
+ * eWay API call
  *
  * @param array $params
  * @return array API result descriptor
@@ -31,20 +32,12 @@
  * @see civicrm_api3_create_error
  * @throws API_Exception
  */
-//function civicrm_api3_job_googleapps_sync($params) {
-
 function civicrm_api3_job_eway($params) {
 
     // TODO: Remove hacky hardcoded constants
-    // The full path to your CiviCRM directory
-    define('CIVICRM_DIRECTORY', '/var/www/citybibleforum/sites/all/modules/civicrm');
     // The title used for receipt messages
     define('RECEIPT_SUBJECT_TITLE', 'Regular Donation');
 
-    // Initialise CiviCRM
-    chdir(CIVICRM_DIRECTORY);
-    require 'civicrm.settings.php';
-    require 'CRM/Core/Config.php';
     $config = CRM_Core_Config::singleton();
 
     require_once 'api/api.php';
@@ -58,6 +51,7 @@ function civicrm_api3_job_eway($params) {
     require_once 'CRM/Core/BAO/Domain.php';
     require_once 'nusoap.php';
 
+    $apiResult = array();
 
     // Get contribution status values
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
@@ -68,10 +62,10 @@ function civicrm_api3_job_eway($params) {
     // Get pending contributions
     $pending_contributions = get_pending_recurring_contributions($eway_token_clients);
 
-    echo "Processing " . count($pending_contributions) . " pending contributions\n";
+    $apiResult[] = "Processing " . count($pending_contributions) . " pending contributions";
     foreach ($pending_contributions as $pending_contribution) {
         // Process payment
-        echo "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
+        $apiResult[] = "Processing payment for pending contribution ID: " . $pending_contribution['contribution']->id;
         $amount_in_cents = str_replace('.', '', $pending_contribution['contribution']->total_amount);
         $result = process_eway_payment(
             $eway_token_clients[$pending_contribution['contribution_recur']->payment_processor_id],
@@ -83,31 +77,31 @@ function civicrm_api3_job_eway($params) {
 
         // Bail if the transaction fails
         if ($result['ewayTrxnStatus'] != 'True') {
-            echo 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id . "\n";
-            echo 'eWay response: ' . $result['ewayTrxnError'] . "\n";
+            $apiResult[] = 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id;
+            $apiResult[] = 'eWay response: ' . $result['ewayTrxnError'];
             continue;
         }
-        echo "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id . "\n";
+        $apiResult[] = "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id;
 
-        echo "Marking contribution as complete\n";
+        $apiResult[] = "Marking contribution as complete";
         $pending_contribution['contribution']->trxn_id = $result->ewayTrxnNumber;
         complete_contribution($pending_contribution['contribution']);
 
-        echo "Sending receipt\n";
+        $apiResult[] = "Sending receipt";
         send_receipt_email($pending_contribution['contribution']->id);
 
-        echo "Updating recurring contribution\n";
+        $apiResult[] = "Updating recurring contribution";
         update_recurring_contribution($pending_contribution['contribution_recur']);
-        echo "Finished processing contribution ID: " . $pending_contribution['contribution']->id . "\n";
+        $apiResult[] = "Finished processing contribution ID: " . $pending_contribution['contribution']->id;
     }
 
     // Process today's scheduled contributions
     $scheduled_contributions = get_scheduled_contributions($eway_token_clients);
 
-    echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
+    $apiResult[] = "Processing " . count($scheduled_contributions) . " scheduled contributions";
     foreach ($scheduled_contributions as $contribution) {
         // Process payment
-        echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
+        $apiResult[] = "Processing payment for scheduled recurring contribution ID: " . $contribution->id;
         $amount_in_cents = str_replace('.', '', $contribution->amount);
         $result = process_eway_payment(
             $eway_token_clients[$contribution->payment_processor_id],
@@ -117,34 +111,18 @@ function civicrm_api3_job_eway($params) {
             ''
         );
 
-    // Process today's scheduled contributions
-    $scheduled_contributions = get_scheduled_contributions();
-
-    echo "Processing " . count($scheduled_contributions) . " scheduled contributions\n";
-    foreach ($scheduled_contributions as $contribution) {
-        // Process payment
-        echo "Processing payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
-        $amount_in_cents = str_replace('.', '', $contribution->amount);
-        $result = process_eway_payment(
-            ($contribution->is_test ? $test_token_client : $live_token_client),
-            $contribution->processor_id,
-            $amount_in_cents,
-            $contribution->invoice_id,
-            ''
-        );
-
         // Bail if the transaction fails
         if ($result->ewayTrxnStatus != 'True') {
-            echo 'ERROR: Failed to process transaction for managed customer: ' . $contribution->processor_id;
-            echo 'eWay response: ' . $result->ewayTrxnError;
+            $apiResult[] = 'ERROR: Failed to process transaction for managed customer: ' . $contribution->processor_id;
+            $apiResult[] = 'eWay response: ' . $result->ewayTrxnError;
             // TODO: Mark transaction as failed
             continue;
         }
-        echo "Successfully processed payment for scheduled recurring contribution ID: " . $contribution->id . "\n";
+        $apiResult[] = "Successfully processed payment for scheduled recurring contribution ID: " . $contribution->id;
 
         $past_contribution = get_first_contribution_from_recurring($contribution->id);
 
-        echo "Creating contribution record\n";
+        $apiResult[] = "Creating contribution record";
         $new_contribution_record = new CRM_Contribute_BAO_Contribution();
         $new_contribution_record->contact_id = $contribution->contact_id;
         $new_contribution_record->receive_date = CRM_Utils_Date::isoToMysql(date('Y-m-d H:i:s'));
@@ -166,13 +144,15 @@ function civicrm_api3_job_eway($params) {
         }
         $new_contribution_record->save();
 
-        echo "Sending receipt\n";
+        $apiResult[] = "Sending receipt";
         send_receipt_email($new_contribution_record->id);
 
-        echo "Updating recurring contribution\n";
+        $apiResult[] = "Updating recurring contribution";
         update_recurring_contribution($contribution);
-        echo "Finished processing recurring contribution ID: " . $contribution->id . "\n";
+        $apiResult[] = "Finished processing recurring contribution ID: " . $contribution->id;
     }
+
+    return civicrm_api3_create_success($apiResult, $params);
 }
 
 /**
@@ -216,7 +196,6 @@ function get_first_contribution_from_recurring($recur_id)
     $contributions->find();
 
     while ($contributions->fetch()) {
-        echo "Found first contribution for this reccurring with ID:".$contributions->id."\n";
         return clone($contributions);
     }
 }
@@ -233,6 +212,10 @@ function get_first_contribution_from_recurring($recur_id)
  */
 function get_pending_recurring_contributions($eway_token_clients)
 {
+    if (empty($eway_token_clients)) {
+        return array();
+    }
+
     $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
 
     // Get the Recurring Contributions that are Pending for this Payment Processor
@@ -267,7 +250,11 @@ function get_pending_recurring_contributions($eway_token_clients)
  */
 function get_scheduled_contributions($eway_token_clients)
 {
-    $contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+    if (empty($eway_token_clients)) {
+        return array();
+    }
+
+	$contributionStatus = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
 
     // Get Recurring Contributions that are In Progress and are due to be processed by the eWAY Recurring processor
     $scheduled_today = new CRM_Contribute_BAO_ContributionRecur();
