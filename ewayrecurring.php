@@ -134,19 +134,27 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
             $soap_client->__setSoapHeaders($header);
 */
 
+            $gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
+
             $soap_client = new nusoap_client("https://www.ewaygateway.com/gateway/ManagedPaymentService/test/managedCreditCardPayment.asmx", false);
-$err = $soap_client->getError();
-if ($err) {
-    echo '<h2>Constructor error</h2><pre>' . $err . '</pre>';
-    echo '<h2>Debug</h2><pre>' . htmlspecialchars($soap_client->getDebug(), ENT_QUOTES) . '</pre>';
-    exit();
-}
+            $err = $soap_client->getError();
+            if ($err) {
+                echo '<h2>Constructor error</h2><pre>' . $err . '</pre>';
+                echo '<h2>Debug</h2><pre>' . htmlspecialchars($soap_client->getDebug(), ENT_QUOTES) . '</pre>';
+                exit();
+            }
 
 // set namespace
-$soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
+            $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
 // set SOAP header
-$headers = "<man:eWAYHeader><man:eWAYCustomerID>" . $ewayCustomerID . "</man:eWAYCustomerID><man:Username>" . $this->_paymentProcessor['user_name'] . "</man:Username><man:Password>" . $this->_paymentProcessor['password'] . "</man:Password></man:eWAYHeader>";
-$soap_client->setHeaders($headers);
+            $headers = "<man:eWAYHeader><man:eWAYCustomerID>"
+                     . $ewayCustomerID
+                     . "</man:eWAYCustomerID><man:Username>"
+                     . $this->_paymentProcessor['user_name']
+                     . "</man:Username><man:Password>"
+                     . $this->_paymentProcessor['password']
+                     . "</man:Password></man:eWAYHeader>";
+            $soap_client->setHeaders($headers);
 
             // Add eWay customer
             $requestbody = array(
@@ -177,15 +185,13 @@ $soap_client->setHeaders($headers);
 
 
             // Hook to allow customer info to be changed before submitting it
-            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $customerinfo );
+            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $requestbody );
 
             // Create the customer via the API
             try{
-
-    $soapaction = 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer';
-    $result = $soap_client->call('man:CreateCustomer', $requestbody, '', $soapaction);
-
-            }catch(Exception $e){
+                $soapaction = 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer';
+                $result = $soap_client->call('man:CreateCustomer', $requestbody, '', $soapaction);
+            } catch (Exception $e) {
                 return self::errorExit(9010, $e->getMessage());
             }
 
