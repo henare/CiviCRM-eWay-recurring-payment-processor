@@ -191,6 +191,10 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
             try{
                 $soapaction = 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer';
                 $result = $soap_client->call('man:CreateCustomer', $requestbody, '', $soapaction);
+
+                if ($result === false) {
+                	return self::errorExit(9011, "Failed to create managed customer");
+                }
             } catch (Exception $e) {
                 return self::errorExit(9010, $e->getMessage());
             }
