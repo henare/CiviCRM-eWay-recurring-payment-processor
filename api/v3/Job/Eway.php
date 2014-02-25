@@ -78,7 +78,7 @@ function civicrm_api3_job_eway($params) {
         // Bail if the transaction fails
         if ($result['ewayTrxnStatus'] != 'True') {
             $apiResult[] = 'ERROR: Failed to process transaction for managed customer: ' . $pending_contribution['contribution_recur']->processor_id;
-            $apiResult[] = 'eWay response: ' . $result['ewayTrxnError'];
+            $apiResult[] = 'eWay response: ' . $result['faultstring'];
             continue;
         }
         $apiResult[] = "Successfully processed payment for pending contribution ID: " . $pending_contribution['contribution']->id;
@@ -285,20 +285,18 @@ function get_scheduled_contributions($eway_token_clients)
  */
 function eway_token_client($gateway_url, $eway_customer_id, $username, $password)
 {
-    var_dump($gateway_url);
-    //$soap_client = new SoapClient($gateway_url);
-        $soap_client = new nusoap_client($gateway_url, false);
+    // Set up SOAP client
+    $soap_client = new nusoap_client($gateway_url, false);
+    $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
 
     // Set up SOAP headers
-    $headers = array(
-        'eWAYCustomerID' => $eway_customer_id,
-        'Username'       => $username,
-        'Password'       => $password
-    );
-
-    $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
-    // set SOAP header
-    $headers = "<man:eWAYHeader><man:eWAYCustomerID>" . $headers['eWAYCustomerID'] . "</man:eWAYCustomerID><man:Username>" . $headers['Username'] . "</man:Username><man:Password>" . $headers['Password'] . "</man:Password></man:eWAYHeader>";
+    $headers = "<man:eWAYHeader><man:eWAYCustomerID>"
+             . $eway_customer_id
+             . "</man:eWAYCustomerID><man:Username>"
+             . $username
+             . "</man:Username><man:Password>"
+             . $password
+             . "</man:Password></man:eWAYHeader>";
     $soap_client->setHeaders($headers);
 
     return $soap_client;
