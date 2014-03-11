@@ -484,7 +484,7 @@ function send_receipt_email($contribution_id)
     }
 
     // TODO: Fix CRM_Core_Payment::subscriptionUrl()
-    // See coment above.
+    // See comment above.
     $session->set('userID', $activeUser);
 
     list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($params);
