@@ -313,7 +313,7 @@ function eway_token_client($gateway_url, $eway_customer_id, $username, $password
  * @param string $invoice_reference InvoiceReference to send to eWay
  * @param string $invoice_description InvoiceDescription to send to eWay
  * @throws SoapFault exceptions
- * @return object eWay response object
+ * @return array eWay response
  */
 function process_eway_payment($soap_client, $managed_customer_id, $amount_in_cents, $invoice_reference, $invoice_description)
 {
