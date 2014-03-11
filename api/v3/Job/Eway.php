@@ -112,7 +112,7 @@ function civicrm_api3_job_eway($params) {
         );
 
         // Bail if the transaction fails
-        if ($result->ewayTrxnStatus != 'True') {
+        if ($result['ewayTrxnStatus'] != 'True') {
             $apiResult[] = 'ERROR: Failed to process transaction for managed customer: ' . $contribution->processor_id;
             $apiResult[] = 'eWay response: ' . $result->ewayTrxnError;
             // TODO: Mark transaction as failed
@@ -453,6 +453,21 @@ function send_receipt_email($contribution_id)
         'isTest' => $contribution->is_test
     );
 
+    // TODO: Fix CRM_Core_Payment::subscriptionUrl()
+    //
+    // Currently that function fails to affix a checksum when the session's UserId
+    // is set, which is unfortunate since CiviCRM Jobs run with a user context for
+    // permissioning purposes.
+    //
+    // subscriptionUrl() just needs to check if the contactId associated with the
+    // subscription is equal to the userId, and if not, add a checksum.
+    //
+    // To work around this, I am temporarily setting the UserId to zero, and hoping
+    // there are no exceptions thrown.
+    $session = CRM_Core_Session::singleton();
+    $activeUser = $session->get('userID');
+    $session->set('userID', 0);
+
     $eWayProcessor = CRM_Financial_BAO_PaymentProcessor::getProcessorForEntity
                     ($contribution->contribution_recur_id, 'recur', 'obj');
     if ( $eWayProcessor->isSupported('cancelSubscription') ) {
@@ -467,6 +482,10 @@ function send_receipt_email($contribution_id)
     	$params['tplParams']['updateSubscriptionUrl'] =
     	        $eWayProcessor->subscriptionURL($contribution->contribution_recur_id, 'recur', 'update');
     }
+
+    // TODO: Fix CRM_Core_Payment::subscriptionUrl()
+    // See coment above.
+    $session->set('userID', $activeUser);
 
     list($sent, $subject, $message, $html) = CRM_Core_BAO_MessageTemplate::sendTemplate($params);
 
