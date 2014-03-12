@@ -136,7 +136,7 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
 
             $gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
 
-            $soap_client = new nusoap_client("https://www.ewaygateway.com/gateway/ManagedPaymentService/test/managedCreditCardPayment.asmx", false);
+            $soap_client = new nusoap_client($gateway_URL, false);
             $err = $soap_client->getError();
             if ($err) {
                 echo '<h2>Constructor error</h2><pre>' . $err . '</pre>';
@@ -193,7 +193,15 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
                 $result = $soap_client->call('man:CreateCustomer', $requestbody, '', $soapaction);
 
                 if ($result === false) {
-                	return self::errorExit(9011, "Failed to create managed customer");
+                    return self::errorExit(9011, 'Failed to create managed customer - result is false');
+                } else if (is_array($result)) {
+                    return self::errorExit(9011, 'Failed to create managed customer - result ('
+                                                . implode(', ', array_keys($result)) 
+                                                . ') is ('
+                                                . implode(', ', $result) 
+                                                . ')');
+                } else if (!is_numeric($result)) {
+                    return self::errorExit(9011, 'Failed to create managed customer - result is ' . $result);
                 }
             } catch (Exception $e) {
                 return self::errorExit(9010, $e->getMessage());
