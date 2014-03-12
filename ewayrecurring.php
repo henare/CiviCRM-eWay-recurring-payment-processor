@@ -110,31 +110,9 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
 
         // Was the recurring payment check box checked?
         if ($params['is_recur'] == 1) {
-            //$gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
 
-  //          $soap_client = new SoapClient($gateway_URL, array('trace' => 1));
-//$soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
-
-            // Set up SOAP headers
-            /*
-            $headers = array(
-                'eWAYCustomerID' => $ewayCustomerID,
-                'Username'       => $this->_paymentProcessor['user_name'],
-                'Password'       => $this->_paymentProcessor['password']
-            );
-            */
-           /*
-            $headers = new stdClass() ;
-            $headers->eWAYCustomerID = $ewayCustomerID;
-            $headers->Username       = $this->_paymentProcessor['user_name'];
-            $headers->Password       = $this->_paymentProcessor['password'];
-            //https://www.eway.com.au/gateway/ManagedPaymentService/test/managedcreditcardpayment.asmx?WSDL
-            $header = new SoapHeader('https://www.eway.com.au/gateway/ManagedPaymentService/test/managedcreditcardpayment.asmx?WSDL', 'eWAYHeader', $headers, false); // CHANGE AT LIVE
-
-            $soap_client->__setSoapHeaders($header);
-*/
-
-            $gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
+            // eWAY Gateway URL
+            $gateway_URL = $this->_paymentProcessor['url_recur'];
 
             $soap_client = new nusoap_client($gateway_URL, false);
             $err = $soap_client->getError();
@@ -144,9 +122,10 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
                 exit();
             }
 
-// set namespace
+            // set namespace
             $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
-// set SOAP header
+
+            // set SOAP header
             $headers = "<man:eWAYHeader><man:eWAYCustomerID>"
                      . $ewayCustomerID
                      . "</man:eWAYCustomerID><man:Username>"
@@ -183,7 +162,6 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
                 'man:CCExpiryYear' => $expireYear
             );
 
-
             // Hook to allow customer info to be changed before submitting it
             CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $requestbody );
 
@@ -207,10 +185,7 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
                 return self::errorExit(9010, $e->getMessage());
             }
 
-
             // We've created the customer successfully
-
-
             $managed_customer_id = $result;
 
             // Save the eWay customer token in the recurring contribution's processor_id field
@@ -236,7 +211,7 @@ class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
             );
 
             /* And we're done - this payment will staying in a pending state until it's processed
-             * by the cronjob
+             * by the Job
              */
         }
         // This is a one off payment, most of this is lifted straight from the original code, so I wont document it.
