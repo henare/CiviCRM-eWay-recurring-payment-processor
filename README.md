@@ -1,6 +1,8 @@
 CiviCRM eWay Token Recurring Payment Processor Extension
 ========================================================
 
+[![Project Status](http://stillmaintained.com/henare/CiviCRM-eWay-recurring-payment-processor.png)](http://stillmaintained.com/henare/CiviCRM-eWay-recurring-payment-processor)
+
 Installing
 ----------
 
