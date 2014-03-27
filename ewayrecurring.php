@@ -1,80 +1,12 @@
 <?php
-/*
- +--------------------------------------------------------------------+
- | CiviCRM                                                            |
- +--------------------------------------------------------------------+
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | CiviCRM is free software; you can copy, modify, and distribute it  |
- | under the terms of the GNU Affero General Public License           |
- | Version 3, 19 November 2007 and the CiviCRM Licensing Exception.   |
- |                                                                    |
- | CiviCRM is distributed in the hope that it will be useful, but     |
- | WITHOUT ANY WARRANTY; without even the implied warranty of         |
- | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.               |
- | See the GNU Affero General Public License for more details.        |
- |                                                                    |
- | You should have received a copy of the GNU Affero General Public   |
- | License and the CiviCRM Licensing Exception along                  |
- | with this program; if not, contact CiviCRM LLC                     |
- | at info[AT]civicrm[DOT]org. If you have questions about the        |
- | GNU Affero General Public License or the licensing of CiviCRM,     |
- | see the CiviCRM license FAQ at http://civicrm.org/licensing        |
- +--------------------------------------------------------------------+
-*/
 
-/*
- +--------------------------------------------------------------------+
- | eWay Recurring Payment Processor Extension                         |
- +--------------------------------------------------------------------+
- | Licensed to CiviCRM under the Academic Free License version 3.0    |
- |                                                                    |
- | Originally written & contributed by Dolphin Software P/L - March   |
- | 2008                                                               |
- |                                                                    |
- | This is a combination of the original eWay payment processor, with |
- | customisations to handle recurring payments as well. Originally    |
- | started by Chris Ward at Community Builders in 2012.               |
- |                                                                    |
- +--------------------------------------------------------------------+
- |                                                                    |
- | This file is a part of CiviCRM.                                    |
- |                                                                    |
- | This code was initially based on the recent PayJunction module     |
- | contributed by Phase2 Technology, and then plundered bits from     |
- | the AuthorizeNet module contributed by Ideal Solution, and         |
- | referenced the eWAY code in Drupal 5.7's ecommerce-5.x-3.4 and     |
- | ecommerce-5.x-4.x-dev modules.                                     |
- |                                                                    |
- | Plus a bit of our own code of course - Peter Barwell               |
- | contact PB@DolphinSoftware.com.au if required.                     |
- |                                                                    |
- | NOTE: The eWAY gateway only allows a single currency per account   |
- |       (per eWAY CustomerID) ie you can only have one currency per  |
- |       added Payment Processor.                                     |
- |       The only way to add multi-currency is to code it so that a   |
- |       different CustomerID is used per currency.                   |
- |                                                                    |
- +--------------------------------------------------------------------+
-*/
-
-/*
- -----------------------------------------------------------------------------------------------
- From the eWay web-site - http://www.eway.com.au/Support/Developer/PaymentsRealTime.aspx
- -----------------------------------------------------------------------------------------------
-   The test Customer ID is 87654321 - this is the only ID that will work on the test gateway.
-   The test Credit Card number is 4444333322221111
-   - this is the only credit card number that will work on the test gateway.
-   The test Total Amount should end in 00 or 08 to get a successful response (e.g. $10.00 or $10.08)
-   ie - all other amounts will return a failed response.
-
- -----------------------------------------------------------------------------------------------
-*/
-
+require_once 'ewayrecurring.civix.php';
 require_once 'CRM/Core/Payment.php';
+require_once 'nusoap.php';
 
-class org_civicrm_ewayrecurring extends CRM_Core_Payment
+class com_chrischinchilla_ewayrecurring extends CRM_Core_Payment
 {
+
     const CHARSET  = 'UTF-8'; # (not used, implicit in the API, might need to convert?)
 
     /**
@@ -104,6 +36,8 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         $this->_processorName    = ts('eWay Recurring');
     }
 
+
+
     /**
      * singleton function used to manage this object
      *
@@ -117,10 +51,12 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
     {
         $processorName = $paymentProcessor['name'];
         if (self::$_singleton[$processorName] === null ) {
-            self::$_singleton[$processorName] = new org_civicrm_ewayrecurring( $mode, $paymentProcessor );
+            self::$_singleton[$processorName] = new com_chrischinchilla_ewayrecurring( $mode, $paymentProcessor );
         }
         return self::$_singleton[$processorName];
     }
+
+
 
     /**********************************************************
     * This function sends request and receives response from
@@ -173,59 +109,84 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         //----------------------------------------------------------------------------------------------------
 
         // Was the recurring payment check box checked?
-        if ($params['is_recur'] == true) {
-            $gateway_URL = $this->_paymentProcessor['url_recur'];    // eWAY Gateway URL
+        if ($params['is_recur'] == 1) {
 
-            $soap_client = new SoapClient($gateway_URL);
+            // eWAY Gateway URL
+            $gateway_URL = $this->_paymentProcessor['url_recur'];
 
-            // Set up SOAP headers
-            $headers = array(
-                'eWAYCustomerID' => $ewayCustomerID,
-                'Username'       => $this->_paymentProcessor['user_name'],
-                'Password'       => $this->_paymentProcessor['password']
-            );
-            $header = new SoapHeader('https://www.eway.com.au/gateway/managedpayment', 'eWAYHeader', $headers);
-            $soap_client->__setSoapHeaders($header);
+            $soap_client = new nusoap_client($gateway_URL, false);
+            $err = $soap_client->getError();
+            if ($err) {
+                echo '<h2>Constructor error</h2><pre>' . $err . '</pre>';
+                echo '<h2>Debug</h2><pre>' . htmlspecialchars($soap_client->getDebug(), ENT_QUOTES) . '</pre>';
+                exit();
+            }
+
+            // set namespace
+            $soap_client->namespaces['man'] = 'https://www.eway.com.au/gateway/managedpayment';
+
+            // set SOAP header
+            $headers = "<man:eWAYHeader><man:eWAYCustomerID>"
+                     . $ewayCustomerID
+                     . "</man:eWAYCustomerID><man:Username>"
+                     . $this->_paymentProcessor['user_name']
+                     . "</man:Username><man:Password>"
+                     . $this->_paymentProcessor['password']
+                     . "</man:Password></man:eWAYHeader>";
+            $soap_client->setHeaders($headers);
 
             // Add eWay customer
-            $customerinfo = array(
-                'Title' => 'Mr.', // Crazily eWay makes this a mandatory field with fixed values
-                'FirstName' => $params['first_name'],
-                'LastName' => $params['last_name'],
-                'Address' => $params['street_address'],
-                'Suburb' => $params['city'],
-                'State' => $params['state_province'],
-                'Company' => '',
-                'PostCode' => $params['postal_code'],
-                // 'Country' => $params['country'],
+            $requestbody = array(
+                'man:Title' => 'Mr.', // Crazily eWay makes this a mandatory field with fixed values
+                'man:FirstName' => $params['first_name'],
+                'man:LastName' => $params['last_name'],
+                'man:Address' => $params['street_address'],
+                'man:Suburb' => $params['city'],
+                'man:State' => $params['state_province'],
+                'man:Company' => '',
+                'man:PostCode' => $params['postal_code'],
+                // 'man:Country' => $params['country'],
                 // TODO: Remove this hardcoded hack
-                'Country' => 'au',
-                'Email' => $params['email'],
-                'Fax' => '',
-                'Phone' => '',
-                'Mobile' => '',
-                'CustomerRef' => '',
-                'JobDesc' => $params['description'],
-                'Comments' => '',
-                'URL' => '',
-                'CCNumber' => $params['credit_card_number'],
-                'CCNameOnCard' => $credit_card_name,
-                'CCExpiryMonth' => $expireMonth,
-                'CCExpiryYear' => $expireYear
+                'man:Country' => 'au',
+                'man:Email' => $params['email'],
+                'man:Fax' => '',
+                'man:Phone' => '',
+                'man:Mobile' => '',
+                'man:CustomerRef' => '',
+                'man:JobDesc' => '',
+                'man:Comments' => '',
+                'man:URL' => '',
+                'man:CCNumber' => $params['credit_card_number'],
+                'man:CCNameOnCard' => $credit_card_name,
+                'man:CCExpiryMonth' => $expireMonth,
+                'man:CCExpiryYear' => $expireYear
             );
 
             // Hook to allow customer info to be changed before submitting it
-            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $customerinfo );
+            CRM_Utils_Hook::alterPaymentProcessorParams( $this, $params, $requestbody );
 
             // Create the customer via the API
             try{
-                $result = $soap_client->CreateCustomer($customerinfo);
-            }catch(Exception $e){
+                $soapaction = 'https://www.eway.com.au/gateway/managedpayment/CreateCustomer';
+                $result = $soap_client->call('man:CreateCustomer', $requestbody, '', $soapaction);
+
+                if ($result === false) {
+                    return self::errorExit(9011, 'Failed to create managed customer - result is false');
+                } else if (is_array($result)) {
+                    return self::errorExit(9011, 'Failed to create managed customer - result ('
+                                                . implode(', ', array_keys($result)) 
+                                                . ') is ('
+                                                . implode(', ', $result) 
+                                                . ')');
+                } else if (!is_numeric($result)) {
+                    return self::errorExit(9011, 'Failed to create managed customer - result is ' . $result);
+                }
+            } catch (Exception $e) {
                 return self::errorExit(9010, $e->getMessage());
             }
 
             // We've created the customer successfully
-            $managed_customer_id = $result->CreateCustomerResult;
+            $managed_customer_id = $result;
 
             // Save the eWay customer token in the recurring contribution's processor_id field
             CRM_Core_DAO::setFieldValue(
@@ -235,8 +196,22 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
                 $managed_customer_id
             );
 
+            //send recurring Notification email for user
+            require_once 'CRM/Contribute/BAO/ContributionRecur.php';
+            $recur = new CRM_Contribute_BAO_ContributionRecur();
+            $recur->id = $params['contributionRecurID'];
+            $recur->find(true);
+            $autoRenewMembership = FALSE;
+            CRM_Contribute_BAO_ContributionPage::recurringNotify(
+                CRM_Core_Payment::RECURRING_PAYMENT_START,
+                $params['contactID'],
+                $params['contributionPageID'],
+                $recur,
+                $autoRenewMembership
+            );
+
             /* And we're done - this payment will staying in a pending state until it's processed
-             * by the cronjob
+             * by the Job
              */
         }
         // This is a one off payment, most of this is lifted straight from the original code, so I wont document it.
@@ -533,6 +508,24 @@ class org_civicrm_ewayrecurring extends CRM_Core_Payment
         }
     }
 
+    /*
+     * All details about recurring contributions are maintained in CiviCRM, and
+     * eWAY only records the Token Customer and completed contributions. Given
+     * this, we can provide a do-nothing implementation of 'cancelSubscription' 
+     */
+    function cancelSubscription(&$message = '', $params = array() ) {
+        return TRUE;
+    }
+
+    /*
+     * All details about recurring contributions are maintained in CiviCRM, and
+     * eWAY only records the Token Customer and completed contributions. Given
+     * this, we can provide a do-nothing implementation of 'changeSubscriptionAmount' 
+     */
+    function changeSubscriptionAmount(&$message = '', $params = array() ) {
+        return TRUE;
+    }
+
     function send_alert_email($p_eWAY_tran_num, $p_trxn_out, $p_trxn_back, $p_request, $p_response)
     {
         // Initialization call is required to use CiviCRM APIs.
@@ -596,3 +589,71 @@ The CiviCRM eWAY Payment Processor Module
     }
     */
 } // end class CRM_Core_Payment_eWAYRecurring
+
+
+/**
+ * Implementation of hook_civicrm_config
+ */
+function ewayrecurring_civicrm_config(&$config) {
+  _ewayrecurring_civix_civicrm_config($config);
+}
+
+/**
+ * Implementation of hook_civicrm_xmlMenu
+ *
+ * @param $files array(string)
+ */
+function ewayrecurring_civicrm_xmlMenu(&$files) {
+  _ewayrecurring_civix_civicrm_xmlMenu($files);
+}
+
+/**
+ * Implementation of hook_civicrm_install
+ */
+function ewayrecurring_civicrm_install() {
+  return _ewayrecurring_civix_civicrm_install();
+}
+
+/**
+ * Implementation of hook_civicrm_uninstall
+ */
+function ewayrecurring_civicrm_uninstall() {
+  return _ewayrecurring_civix_civicrm_uninstall();
+}
+
+/**
+ * Implementation of hook_civicrm_enable
+ */
+function ewayrecurring_civicrm_enable() {
+  return _ewayrecurring_civix_civicrm_enable();
+}
+
+/**
+ * Implementation of hook_civicrm_disable
+ */
+function ewayrecurring_civicrm_disable() {
+  return _ewayrecurring_civix_civicrm_disable();
+}
+
+/**
+ * Implementation of hook_civicrm_upgrade
+ *
+ * @param $op string, the type of operation being performed; 'check' or 'enqueue'
+ * @param $queue CRM_Queue_Queue, (for 'enqueue') the modifiable list of pending up upgrade tasks
+ *
+ * @return mixed  based on op. for 'check', returns array(boolean) (TRUE if upgrades are pending)
+ *                for 'enqueue', returns void
+ */
+function ewayrecurring_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
+  return _ewayrecurring_civix_civicrm_upgrade($op, $queue);
+}
+
+/**
+ * Implementation of hook_civicrm_managed
+ *
+ * Generate a list of entities to create/deactivate/delete when this module
+ * is installed, disabled, uninstalled.
+ */
+function ewayrecurring_civicrm_managed(&$entities) {
+  return _ewayrecurring_civix_civicrm_managed($entities);
+}
