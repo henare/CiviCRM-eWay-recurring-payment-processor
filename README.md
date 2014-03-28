@@ -18,4 +18,4 @@ define('PAYMENT_PROCESSOR_ID', 9);
 define('RECEIPT_SUBJECT_TITLE', 'Monthly Donation');
 // Every period a receipt will get sent, what should it's subject be
 
-This extension has quite a history, this documentation will be fleshed out in the future, but it wouldn't have been possible without the efforts and backing of : Voiceless, Community Builders, Henare Degan and RIGPA.
+This extension has quite a history, this documentation will be fleshed out in the future, but it wouldn't have been possible without the efforts and backing of : Voiceless, Community Builders, The Australasian Tuberous Sclerosis Society, Henare Degan and RIGPA.
